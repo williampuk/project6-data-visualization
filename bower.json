@@ -1,0 +1,19 @@
+{
+  "name": "project6_data_visualization",
+  "description": "",
+  "main": "",
+  "authors": [
+    "William Puk <williampuk@gmail.com>"
+  ],
+  "license": "MIT",
+  "moduleType": [],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
