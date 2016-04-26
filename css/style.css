@@ -1,3 +1,26 @@
 body {
   padding: 0 50px;
 }
+
+.axis {
+  font-size: 75%;
+}
+
+#survival .y.axis path {
+  display: none;
+}
+
+#survival .x.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#survival .x.axis line {
+  shape-rendering: crispEdges;
+  stroke: #000;
+}
+
+#survival .x.axis .minor line {
+  stroke: #777;
+  stroke-dasharray: 2,2;
+}
