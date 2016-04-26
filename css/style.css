@@ -6,6 +6,10 @@ body {
   font-size: 75%;
 }
 
+#survival-focus div {
+  display: inline-block;
+}
+
 #survival .y.axis path {
   display: none;
 }
@@ -20,7 +24,12 @@ body {
   stroke: #000;
 }
 
-#survival .x.axis .minor line {
-  stroke: #777;
-  stroke-dasharray: 2,2;
+#age .x.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#age .x.axis line {
+  shape-rendering: crispEdges;
+  stroke: #000;
 }

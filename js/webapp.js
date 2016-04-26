@@ -19,9 +19,8 @@ var app = function(d3, dimple, $, undefined) {
                 top: 10,
                 left: 50,
                 bottom: 10,
-                right: 30
+                right: 35
             },
-            axisPadding = 0,
             width = 800,
             height = 100,
             colors = {
@@ -31,8 +30,8 @@ var app = function(d3, dimple, $, undefined) {
         var svg = d3.select("div#survival")
             .append("svg")
             .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom * 2);
-        var svgGrp = svg.append("g")
+            .attr("height", height + margin.top + margin.bottom * 2)
+            .append("g")
             .attr({
                 transform: "translate(" + margin.left + "," +
                     margin.top + ")",
@@ -50,19 +49,18 @@ var app = function(d3, dimple, $, undefined) {
                 return d.category;
             }))
             .rangeRoundBands([0, height], 0.2);
-        var barGroups = svgGrp.selectAll("g")
+        var barGroups = svg.selectAll("g")
             .data(survivalData)
             .enter()
             .append("g")
             .style("fill", function(d, i) {
                 return colors[d.category];
+            })
+            .attr("transform", function(d) {
+                return "translate(" + 0 + "," + yScale(d.category) + ")";
             });
         barGroups
             .append("rect")
-            .attr("x", 0)
-            .attr("y", function(d, i) {
-                return yScale(d.category);
-            })
             .attr("height", function(d) {
                 return yScale.rangeBand();
             })
@@ -79,9 +77,9 @@ var app = function(d3, dimple, $, undefined) {
                 'alignment-baseline': 'middle'
             })
             .attr("transform", function(d) {
-                return "translate(" + (xScale(d.count) + 5) + ", " + (yScale(d.category) + yScale.rangeBand() / 2) + ")";
+                return "translate(" + (xScale(d.count) + 5) + ", " + (yScale.rangeBand() / 2) + ")";
             });
-
+        // Axes
         var xAxis = d3.svg.axis()
             .orient('bottom')
             .scale(xScale)
@@ -89,7 +87,7 @@ var app = function(d3, dimple, $, undefined) {
 
         svg.append('g')
             .attr({
-                transform: 'translate(' + margin.left + ',' + (margin.top + height + axisPadding) + ')'
+                transform: 'translate(0,' + height + ')'
             })
             .attr("class", "x axis")
             .call(xAxis);
@@ -99,9 +97,6 @@ var app = function(d3, dimple, $, undefined) {
             .scale(yScale);
 
         svg.append('g')
-            .attr({
-                transform: 'translate(' + (margin.left - axisPadding) + ',' + margin.top + ')'
-            })
             .attr("class", "y axis")
             .call(yAxis);
         return {
@@ -121,8 +116,8 @@ var app = function(d3, dimple, $, undefined) {
             return;
         }
         var margin = {
-                top: 5,
-                left: 2,
+                top: 15,
+                left: 20,
                 bottom: 5,
                 right: 2
             },
@@ -143,8 +138,8 @@ var app = function(d3, dimple, $, undefined) {
         var svg = d3.select("div#survival-ratio")
             .append("svg")
             .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom * 2);
-        var svgGrp = svg.append("g")
+            .attr("height", height + margin.top + margin.bottom * 2)
+            .append("g")
             .attr({
                 transform: "translate(" + margin.left + "," +
                     margin.top + ")",
@@ -155,7 +150,7 @@ var app = function(d3, dimple, $, undefined) {
                 return layer[0].y0 + layer[0].y;
             })])
             .range([0, height]);
-        var barGroups = svgGrp.selectAll("g")
+        var barGroups = svg.selectAll("g")
             .data(layer)
             .enter()
             .append("g")
@@ -198,10 +193,86 @@ var app = function(d3, dimple, $, undefined) {
             });
     }
 
+    function drawAgeHistogram(data) {
+        var rowsWithAge = [],
+            rowsWithoutAge = [];
+        data.forEach(function(d) {
+            if (d.Age !== null) {
+                rowsWithAge.push(d);
+            } else {
+                rowsWithoutAge.push(d);
+            }
+        });
+        var margin = {
+                top: 15,
+                left: 30,
+                bottom: 20,
+                right: 2
+            },
+            axisPadding = 0,
+            width = 1000,
+            barWidth = 20,
+            height = 300,
+            maxAge = d3.max(rowsWithAge, function(d) {
+                return d.Age;
+            });
+
+        var xScale = d3.scale.linear()
+            .domain([0, maxAge + 1])
+            .range([0, width]);
+
+        var histogramData = d3.layout.histogram()
+            .bins(xScale.ticks(maxAge))
+            (rowsWithAge.map(function(d) {
+                return d.Age;
+            }));
+
+        var yScale = d3.scale.linear()
+            .domain([0, d3.max(histogramData, function(d) {
+                return d.y;
+            })])
+            .range([height, 0]);
+
+        var svg = d3.select("div#age")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        // debugger;
+        var barGroups = svg.selectAll("g")
+            .data(histogramData)
+            .enter()
+            .append("g")
+            .attr("transform", function(d) {
+                return "translate(" + xScale(d.x) + ", " + yScale(d.y) + ")";
+            });
+
+        barGroups
+            .append("rect")
+            .attr("width", xScale(histogramData[0].dx) - 2)
+            .attr("height", function(d) {
+                return height - yScale(d.y);
+            });
+        // Axes
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom")
+            .ticks(16);
+            // .tickValues(xScale.domain().filter(function(d) { return d % 5 === 0; }));
+        svg.append("g")
+          .attr({
+            class: "x axis",
+            transform: "translate(0, " + height + ")"
+          })
+          .call(xAxis);
+    }
+
     function draw(data) {
         var survivalData = updateSurvivalCount(data);
         drawSurvivalChart(survivalData);
         drawSurvivalStack(survivalData);
+        drawAgeHistogram(data);
     }
 
     function init() {
