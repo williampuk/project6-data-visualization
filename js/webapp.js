@@ -1,6 +1,12 @@
 var app = function(d3, dimple, $, undefined) {
     "use strict";
 
+    var pclassMap = {
+        1: "Upper",
+        2: "Middle",
+        3: "Lower"
+    };
+
     function updateSurvivalCount(data) {
         var survived = d3.sum(data, function(d) {
             return d.Survived;
@@ -16,7 +22,7 @@ var app = function(d3, dimple, $, undefined) {
 
     function updateSexCount(data) {
         var male = d3.sum(data, function(d) {
-            return d.Sex === "male";
+            return +(d.Sex === "male");
         });
         return [{
             category: "Male",
@@ -24,6 +30,31 @@ var app = function(d3, dimple, $, undefined) {
         }, {
             category: "Female",
             count: data.length - male
+        }];
+    }
+
+    function updatePclassCount(data) {
+        var upper = 0,
+            middle = 0,
+            lower = 0;
+        data.forEach(function(d) {
+            if (d.Pclass === 1) {
+                upper++;
+            } else if (d.Pclass === 2) {
+                middle++;
+            } else {
+                lower++;
+            }
+        });
+        return [{
+            category: "Upper",
+            count: upper
+        }, {
+            category: "Middle",
+            count: middle
+        }, {
+            category: "Lower",
+            count: lower
         }];
     }
 
@@ -124,7 +155,7 @@ var app = function(d3, dimple, $, undefined) {
             return;
         }
         var margin = {
-                top: 15,
+                top: 5,
                 left: 20,
                 bottom: 5,
                 right: 2
@@ -142,7 +173,7 @@ var app = function(d3, dimple, $, undefined) {
         var svg = d3.select("div#survival-ratio")
             .append("svg")
             .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom * 2)
+            .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr({
                 transform: "translate(" + margin.left + "," +
@@ -292,7 +323,7 @@ var app = function(d3, dimple, $, undefined) {
         var margin = {
                 top: 5,
                 left: 15,
-                bottom: 5,
+                bottom: 10,
                 right: 5
             },
             width = 500,
@@ -307,7 +338,7 @@ var app = function(d3, dimple, $, undefined) {
         var svg = d3.select("div#sex")
             .append("svg")
             .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom * 2)
+            .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr({
                 transform: "translate(" + margin.left + "," +
@@ -365,13 +396,99 @@ var app = function(d3, dimple, $, undefined) {
             });
     }
 
+    function drawPclassChart(pclassData) {
+      var margin = {
+              top: 25,
+              left: 20,
+              bottom: 20,
+              right: 5
+          },
+          width = 300,
+          height = 150,
+          totalCount = d3.sum(pclassData, function(d) {
+            return d.count;
+          });
+
+      var svg = d3.select("div#pclass")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr({
+              transform: "translate(" + margin.left + "," +
+                  margin.top + ")",
+              class: 'main-group'
+          });
+
+      var xScale = d3.scale.ordinal()
+          .domain(pclassData.map(function(d) {
+              return d.category;
+          }))
+          .rangeRoundBands([0, width], 0.2);
+      var yScale = d3.scale
+          .linear()
+          .domain([0, d3.max(pclassData, function(d) {
+            return d.count;
+          })])
+          .range([height, 0]);
+      var barGroups = svg.selectAll("g")
+          .data(pclassData)
+          .enter()
+          .append("g")
+          .attr("class", function(d) {
+              return d.category.toLowerCase() + " bar-group";
+          })
+          .attr("transform", function(d) {
+              return "translate(" + xScale(d.category) + "," + yScale(d.count) + ")";
+          });
+      barGroups
+          .append("rect")
+          .attr("height", function(d) {
+              return height - yScale(d.count);
+          })
+          .attr("width", function(d) {
+            return xScale.rangeBand();
+          });
+      barGroups
+          .append('text')
+          .text(function(d) {
+              return d.count + " (" + Math.round(d.count / totalCount * 1000) / 10 + "%)";
+          })
+          .attr({
+              "class": "bar text",
+              "alignment-baseline": "after-edge",
+              'text-anchor': 'middle'
+          })
+          .attr("transform", function(d) {
+              return "translate( " + xScale.rangeBand() / 2 + ", -2)";
+          });
+      // Axes
+      var xAxis = d3.svg.axis()
+          .orient('bottom')
+          .scale(xScale);
+
+      svg.append('g')
+          .attr({
+              transform: 'translate(0,' + height + ')'
+          })
+          .attr("class", "x axis")
+          .call(xAxis);
+      return {
+          margin: margin,
+          width: width,
+          height: height
+      };
+    }
+
     function draw(data) {
         var survivalData = updateSurvivalCount(data);
         var sexData = updateSexCount(data);
+        var pclassData = updatePclassCount(data);
         drawSurvivalChart(survivalData);
         drawSurvivalStack(survivalData);
         drawAgeHistogram(data);
         drawSexStack(sexData);
+        drawPclassChart(pclassData);
     }
 
     function init() {
@@ -380,7 +497,6 @@ var app = function(d3, dimple, $, undefined) {
             row.Survived = +row.Survived;
             row.SurvivedBool = row.Survived === 1;
             row.Pclass = +row.Pclass;
-            row.PclassLbl = row.Pclass === 1 ? "Upper" : row.Pclass === 2 ? "Middle" : "Lower";
             row.Age = row.Age === "" ? null : +row.Age;
             row.SibSp = +row.SibSp;
             row.Parch = +row.Parch;
