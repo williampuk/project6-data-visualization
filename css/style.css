@@ -2,6 +2,30 @@ body {
   padding: 0 50px;
 }
 
+/* Chart Colors */
+.survived.bar-group {
+  fill: #33a02c;
+}
+
+.perished.bar-group {
+  fill: #e31a1c;
+}
+
+.age.bar-group {
+  fill: #6a3d9a;
+}
+
+.male.bar-group {
+  fill: #1f78b4;
+  opacity: .7;
+}
+
+.female.bar-group {
+  fill: #fb9a99;
+}
+
+/* Axes */
+
 .axis {
   font-size: 75%;
 }
@@ -24,12 +48,12 @@ body {
   stroke: #000;
 }
 
-#age .x.axis path {
+#age .x.axis path, #age .y.axis path {
   fill: none;
   stroke: #000;
 }
 
-#age .x.axis line {
+#age .x.axis line, #age .y.axis line {
   shape-rendering: crispEdges;
   stroke: #000;
 }

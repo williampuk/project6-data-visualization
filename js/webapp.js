@@ -14,6 +14,19 @@ var app = function(d3, dimple, $, undefined) {
         }];
     }
 
+    function updateSexCount(data) {
+        var male = d3.sum(data, function(d) {
+            return d.Sex === "male";
+        });
+        return [{
+            category: "Male",
+            count: male
+        }, {
+            category: "Female",
+            count: data.length - male
+        }];
+    }
+
     function drawSurvivalChart(survivalData) {
         var margin = {
                 top: 10,
@@ -22,11 +35,7 @@ var app = function(d3, dimple, $, undefined) {
                 right: 35
             },
             width = 800,
-            height = 100,
-            colors = {
-                Survived: "blue",
-                Perished: "red"
-            };
+            height = 100;
         var svg = d3.select("div#survival")
             .append("svg")
             .attr("width", width + margin.left + margin.right)
@@ -53,8 +62,8 @@ var app = function(d3, dimple, $, undefined) {
             .data(survivalData)
             .enter()
             .append("g")
-            .style("fill", function(d, i) {
-                return colors[d.category];
+            .attr("class", function(d) {
+                return d.category.toLowerCase() + " bar-group";
             })
             .attr("transform", function(d) {
                 return "translate(" + 0 + "," + yScale(d.category) + ")";
@@ -102,8 +111,7 @@ var app = function(d3, dimple, $, undefined) {
         return {
             margin: margin,
             width: width,
-            height: height,
-            colors: colors
+            height: height
         };
     }
 
@@ -124,11 +132,7 @@ var app = function(d3, dimple, $, undefined) {
             axisPadding = 0,
             width = 80,
             barWidth = 20,
-            height = 100,
-            colors = {
-                Survived: "blue",
-                Perished: "red"
-            };
+            height = 100;
         var layer = d3.layout.stack()(survivalData.map(function(d) {
             return [{
                 x: d.category,
@@ -154,8 +158,8 @@ var app = function(d3, dimple, $, undefined) {
             .data(layer)
             .enter()
             .append("g")
-            .style("fill", function(d, i) {
-                return colors[d[0].x];
+            .attr("class", function(d) {
+                return d[0].x.toLowerCase() + " bar-group";
             });
         barGroups
             .selectAll("rect")
@@ -244,6 +248,7 @@ var app = function(d3, dimple, $, undefined) {
             .data(histogramData)
             .enter()
             .append("g")
+            .attr("class", "age bar-group")
             .attr("transform", function(d) {
                 return "translate(" + xScale(d.x) + ", " + yScale(d.y) + ")";
             });
@@ -259,20 +264,114 @@ var app = function(d3, dimple, $, undefined) {
             .scale(xScale)
             .orient("bottom")
             .ticks(16);
-            // .tickValues(xScale.domain().filter(function(d) { return d % 5 === 0; }));
         svg.append("g")
-          .attr({
-            class: "x axis",
-            transform: "translate(0, " + height + ")"
-          })
-          .call(xAxis);
+            .attr({
+                class: "x axis",
+                transform: "translate(" + axisPadding + ", " + height + ")"
+            })
+            .call(xAxis);
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+        svg.append("g")
+            .attr({
+                class: "y axis",
+                transform: "translate(" + (-axisPadding) + ", 0)"
+            })
+            .call(yAxis);
+    }
+
+    function drawSexStack(sexData) {
+        var totalCount = d3.sum(sexData, function(d) {
+            return d.count;
+        });
+        if (totalCount <= 0) {
+            // It should not draw this graph if both counts are zero's.
+            return;
+        }
+        var margin = {
+                top: 5,
+                left: 15,
+                bottom: 5,
+                right: 5
+            },
+            width = 500,
+            barHeight = 20,
+            height = 30;
+        var layer = d3.layout.stack()(sexData.map(function(d) {
+            return [{
+                x: d.category,
+                y: d.count
+            }];
+        }));
+        var svg = d3.select("div#sex")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom * 2)
+            .append("g")
+            .attr({
+                transform: "translate(" + margin.left + "," +
+                    margin.top + ")",
+                class: 'main-group'
+            });
+        var xScale = d3.scale.linear()
+            .domain([0, d3.max(layer, function(layer) {
+                return layer[0].y0 + layer[0].y;
+            })])
+            .range([0, width]);
+        var barGroups = svg.selectAll("g")
+            .data(layer)
+            .enter()
+            .append("g")
+            .attr("class", function(d) {
+                return d[0].x.toLowerCase() + " bar-group";
+            });
+        barGroups
+            .selectAll("rect")
+            .data(function(d) {
+                return d;
+            })
+            .enter()
+            .append("rect")
+            .attr("x", function(d, i) {
+                return xScale(d.y0);
+            })
+            .attr("y", 0)
+            .attr("height", barHeight)
+            .attr("width", function(d) {
+                return xScale(d.y);
+            });
+        barGroups
+            .selectAll("text")
+            .data(function(d) {
+                return d;
+            })
+            .enter()
+            .append('text')
+            .text(function(d) {
+                var count = sexData.find(function(sd) {
+                    return sd.category === d.x;
+                }).count;
+                var percentage = Math.round(count / totalCount * 1000) / 10;
+                return d.x + ": " + count + " (" + percentage + "%)";
+            })
+            .attr({
+                "class": "bar text",
+                'alignment-baseline': 'text-before-edge',
+                'text-anchor': 'middle'
+            })
+            .attr("transform", function(d) {
+                return "translate(" + (xScale(d.y0) + xScale(d.y) / 2) + ", " + (barHeight + 2) + ")";
+            });
     }
 
     function draw(data) {
         var survivalData = updateSurvivalCount(data);
+        var sexData = updateSexCount(data);
         drawSurvivalChart(survivalData);
         drawSurvivalStack(survivalData);
         drawAgeHistogram(data);
+        drawSexStack(sexData);
     }
 
     function init() {
