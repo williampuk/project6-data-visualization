@@ -1,18 +1,24 @@
 var app = function(d3, dimple, $) {
   "use strict";
 
-  var pclassMap = {
-    1: "Upper",
-    2: "Middle",
-    3: "Lower"
-  };
-  var chartSvgs = {
-    survivalChart: undefined,
-    survivalStack: undefined,
-    ageHistogram: undefined,
-    sexChart: undefined,
-    pclassChart: undefined
-  };
+  var fullData,
+    pclassMap = {
+      1: "Upper",
+      2: "Middle",
+      3: "Lower"
+    },
+    chartSvgs = {
+      survivalChart: undefined,
+      survivalStack: undefined,
+      ageHistogram: undefined,
+      sexChart: undefined,
+      pclassChart: undefined
+    },
+    dataFilters = {
+      ageRange: [],
+      sex: [],
+      pclass: []
+    };
 
   function updateSurvivalCount(data) {
     var survived = d3.sum(data, function(d) {
@@ -54,14 +60,14 @@ var app = function(d3, dimple, $) {
       }
     });
     return [{
-      category: "Upper",
-      count: upper
+      category: "Lower",
+      count: lower
     }, {
       category: "Middle",
       count: middle
     }, {
-      category: "Lower",
-      count: lower
+      category: "Upper",
+      count: upper
     }];
   }
 
@@ -327,7 +333,7 @@ var app = function(d3, dimple, $) {
       return d.y;
     })]);
 
-    var svg = isRedraw ? chartSvgs.ageHistogram.svg : d3.select("div#age")
+    var svg = isRedraw ? chartSvgs.ageHistogram.svg : d3.select("div#age-chart")
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -335,7 +341,9 @@ var app = function(d3, dimple, $) {
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     // debugger;
     var barGroups = svg.selectAll("g.bar-group")
-      .data(histogramData);
+      .data(histogramData, function(d) {
+        return d.x;
+      });
     if (!isRedraw) {
       barGroups.enter()
         .append("g")
@@ -385,7 +393,7 @@ var app = function(d3, dimple, $) {
     };
   }
 
-  function drawSexStack(sexData) {
+  function drawSexStack(sexData, isRedraw) {
     var totalCount = d3.sum(sexData, function(d) {
       return d.count;
     });
@@ -395,9 +403,9 @@ var app = function(d3, dimple, $) {
     }
     var margin = {
         top: 5,
-        left: 15,
+        left: 30,
         bottom: 10,
-        right: 5
+        right: 30
       },
       width = 500,
       barHeight = 20,
@@ -408,7 +416,7 @@ var app = function(d3, dimple, $) {
         y: d.count
       }];
     }));
-    var svg = d3.select("div#sex")
+    var svg = isRedraw ? chartSvgs.sexChart.svg : d3.select("div#sex-chart")
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -418,51 +426,67 @@ var app = function(d3, dimple, $) {
           margin.top + ")",
         class: 'main-group'
       });
-    var xScale = d3.scale.linear()
-      .domain([0, d3.max(layer, function(layer) {
-        return layer[0].y0 + layer[0].y;
-      })])
+    // Scale
+    var xScale = isRedraw ? chartSvgs.sexChart.xScale : d3.scale.linear()
       .range([0, width]);
-    var barGroups = svg.selectAll("g")
-      .data(layer)
-      .enter()
-      .append("g")
-      .attr("class", function(d) {
-        return d[0].x.toLowerCase() + " bar-group";
+    xScale.domain([0, d3.max(layer, function(layer) {
+      return layer[0].y0 + layer[0].y;
+    })]);
+    // Bar Groups
+    var barGroups = svg.selectAll("g.bar-group")
+      .data(layer, function(d, i) {
+        return i;
       });
-    barGroups
+    if (!isRedraw) {
+      barGroups.enter()
+        .append("g")
+        .attr("class", function(d) {
+          return d[0].x.toLowerCase() + " bar-group";
+        });
+    }
+    // Bar Group Rects
+    var barGroupRects = barGroups
       .selectAll("rect")
       .data(function(d) {
         return d;
-      })
-      .enter()
-      .append("rect")
-      .attr("x", function(d, i) {
+      }, function(d) {
+        return d.x;
+      });
+    if (!isRedraw) {
+      barGroupRects.enter()
+        .append("rect")
+        .attr("y", 0)
+        .attr("height", barHeight);
+    }
+    barGroupRects.attr("x", function(d, i) {
         return xScale(d.y0);
       })
-      .attr("y", 0)
-      .attr("height", barHeight)
       .attr("width", function(d) {
         return xScale(d.y);
       });
-    barGroups
-      .selectAll("text")
+    // Bar Group Texts
+    var barGroupTexts = barGroups
+      .selectAll("text.bar.text")
       .data(function(d) {
         return d;
-      })
-      .enter()
-      .append('text')
-      .text(function(d) {
+      }, function(d) {
+        return d.x;
+      });
+    if (!isRedraw) {
+      barGroupTexts.enter()
+        .append('text')
+        .attr({
+          "class": "bar text",
+          'alignment-baseline': 'text-before-edge',
+          'text-anchor': 'middle'
+        });
+    }
+    barGroupTexts.text(function(d) {
         var count = sexData.find(function(sd) {
           return sd.category === d.x;
         }).count;
         var percentage = Math.round(count / totalCount * 1000) / 10;
         return d.x + ": " + count + " (" + percentage + "%)";
-      })
-      .attr({
-        "class": "bar text",
-        'alignment-baseline': 'text-before-edge',
-        'text-anchor': 'middle'
       })
       .attr("transform", function(d) {
         return "translate(" + (xScale(d.y0) + xScale(d.y) / 2) + ", " + (barHeight + 2) + ")";
@@ -478,7 +502,7 @@ var app = function(d3, dimple, $) {
     };
   }
 
-  function drawPclassChart(pclassData) {
+  function drawPclassChart(pclassData, isRedraw) {
     var margin = {
         top: 25,
         left: 20,
@@ -486,12 +510,11 @@ var app = function(d3, dimple, $) {
         right: 5
       },
       width = 300,
-      height = 150,
+      height = 100,
       totalCount = d3.sum(pclassData, function(d) {
         return d.count;
       });
-
-    var svg = d3.select("div#pclass")
+    var svg = isRedraw ? chartSvgs.pclassChart.svg : d3.select("div#pclass-chart")
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
@@ -501,41 +524,44 @@ var app = function(d3, dimple, $) {
           margin.top + ")",
         class: 'main-group'
       });
-
-    var xScale = d3.scale.ordinal()
+    // Scales
+    var xScale = isRedraw ? chartSvgs.pclassChart.xScale : d3.scale.ordinal()
       .domain(pclassData.map(function(d) {
         return d.category;
       }))
       .rangeRoundBands([0, width], 0.2);
-    var yScale = d3.scale
+    var yScale = isRedraw ? chartSvgs.pclassChart.yScale : d3.scale
       .linear()
-      .domain([0, d3.max(pclassData, function(d) {
-        return d.count;
-      })])
       .range([height, 0]);
-    var barGroups = svg.selectAll("g")
-      .data(pclassData)
-      .enter()
-      .append("g")
-      .attr("class", function(d) {
-        return d.category.toLowerCase() + " bar-group";
-      })
-      .attr("transform", function(d) {
-        return "translate(" + xScale(d.category) + "," + yScale(d.count) + ")";
+    yScale.domain([0, d3.max(pclassData, function(d) {
+      return d.count;
+    })]);
+    var barGroups = svg.selectAll("g.bar-group")
+      .data(pclassData, function(d) {
+        return d.category;
       });
-    barGroups
+    if (!isRedraw) {
+      barGroups.enter()
+        .append("g")
+        .attr("class", function(d) {
+          return d.category.toLowerCase() + " bar-group";
+        });
+    }
+    barGroups.attr("transform", function(d) {
+      return "translate(" + xScale(d.category) + "," + yScale(d.count) + ")";
+    });
+    var barGroupRects = isRedraw ? barGroups.select("rect.pclass-data") : barGroups
       .append("rect")
-      .attr("height", function(d) {
-        return height - yScale(d.count);
-      })
+      .attr("class", "pclass-data")
       .attr("width", function(d) {
         return xScale.rangeBand();
       });
-    barGroups
+    barGroupRects
+      .attr("height", function(d) {
+        return height - yScale(d.count);
+      });
+    var barGroupTexts = isRedraw ? barGroups.select("text.bar.text") : barGroups
       .append('text')
-      .text(function(d) {
-        return d.count + " (" + Math.round(d.count / totalCount * 1000) / 10 + "%)";
-      })
       .attr({
         "class": "bar text",
         "alignment-baseline": "after-edge",
@@ -544,17 +570,22 @@ var app = function(d3, dimple, $) {
       .attr("transform", function(d) {
         return "translate( " + xScale.rangeBand() / 2 + ", -2)";
       });
+    barGroupTexts.text(function(d) {
+      return d.count + (totalCount === 0 ? "" : " (" + Math.round(d.count / totalCount * 1000) / 10 + "%)");
+    });
     // Axes
-    var xAxis = d3.svg.axis()
-      .orient('bottom')
-      .scale(xScale);
+    if (!isRedraw) {
+      var xAxis = d3.svg.axis()
+        .orient('bottom')
+        .scale(xScale);
 
-    svg.append('g')
-      .attr({
-        transform: 'translate(0,' + height + ')'
-      })
-      .attr("class", "x axis")
-      .call(xAxis);
+      svg.append('g')
+        .attr({
+          transform: 'translate(0,' + height + ')'
+        })
+        .attr("class", "x axis")
+        .call(xAxis);
+    }
 
     chartSvgs.pclassChart = {
       svg: svg,
@@ -572,15 +603,13 @@ var app = function(d3, dimple, $) {
       .on("brush", function(p) {
         console.log(brush.extent(), p);
         var extent = brush.extent();
-        var startAge = Math.ceil(brush.extent()[0]);
-        var endAge = Math.floor(brush.extent()[1]);
+        var ageRange = [Math.ceil(extent[0]), Math.floor(extent[1])];
         chartSvgs.ageHistogram.svg.selectAll("rect.age-data")
           .classed("dimmed", function(d) {
-            return d.x < startAge || d.x >= endAge;
+            return d.x < ageRange[0] || d.x >= ageRange[1];
           });
-        // xScaleTop.domain(brush.empty() ? xScaleBottom.domain() : brush.extent());
-        // topPath.attr("d", lineTop);
-        // focus.select(".x.axis").call(xAxisTop);
+        dataFilters.ageRange = ageRange;
+        redrawWithFilteredDate(chartSvgs.ageHistogram);
       })
       .on("brushend", function() {
         var extent = brush.extent();
@@ -589,6 +618,10 @@ var app = function(d3, dimple, $) {
         if (endAge - startAge <= 0 || brush.empty()) {
           chartSvgs.ageHistogram.svg.selectAll("rect.age-data")
             .classed("dimmed", false);
+          brush.clear();
+          chartSvgs.ageHistogram.svg.select("g.x.brush").call(brush);
+          dataFilters.ageRange = [];
+          redrawWithFilteredDate(chartSvgs.ageHistogram);
         }
       });
     chartSvgs.ageHistogram.svg.append("g")
@@ -602,6 +635,7 @@ var app = function(d3, dimple, $) {
   }
 
   function draw(data) {
+    fullData = data;
     var survivalData = updateSurvivalCount(data);
     var sexData = updateSexCount(data);
     var pclassData = updatePclassCount(data);
@@ -613,13 +647,18 @@ var app = function(d3, dimple, $) {
     drawAgeHistogramBrush(data);
   }
 
-  function redrawWithUpdatedDate(data, excludedCharts) {
+  function redrawWithFilteredDate(excludedCharts) {
+    var data = filterData(fullData);
     var survivalData = updateSurvivalCount(data);
     var sexData = updateSexCount(data);
     var pclassData = updatePclassCount(data);
 
     function shouldUpdate(chart) {
-      return excludedCharts.indexOf(chartSvgs.survivalChart) < 0;
+      if ($.isArray(excludedCharts)) {
+        return excludedCharts.indexOf(chart) < 0;
+      } else {
+        return excludedCharts !== chart;
+      }
     }
 
     if (shouldUpdate(chartSvgs.survivalChart)) {
@@ -637,6 +676,27 @@ var app = function(d3, dimple, $) {
     if (shouldUpdate(chartSvgs.survivalChart)) {
       drawPclassChart(pclassData, true);
     }
+  }
+
+  function filterData(data) {
+    return $.grep(data, function(d) {
+      if (!$.isEmptyObject(dataFilters.ageRange)) {
+        if (d.Age === null) {
+          return false;
+        } else if (d.Age < dataFilters.ageRange[0] || d.Age >= dataFilters.ageRange[1]) {
+          return false;
+        }
+      }
+      if (!$.isEmptyObject(dataFilters.sex) &&
+        dataFilters.sex.indexOf(d.Sex) < 0) {
+        return false;
+      }
+      if (!$.isEmptyObject(dataFilters.pclass) &&
+        dataFilters.pclass.indexOf(d.Pclass) < 0) {
+        return false;
+      }
+      return true;
+    });
   }
 
   function init() {
@@ -660,4 +720,4 @@ var app = function(d3, dimple, $) {
   };
 }(d3, dimple, jQuery);
 
-window.jQuery(app.init);
+jQuery(app.init);

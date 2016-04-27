@@ -11,15 +11,15 @@ body {
   fill: #e31a1c;
 }
 
-#age .age.bar-group {
+#age-chart .age.bar-group {
   fill: #6a3d9a;
 }
 
-#age .age.bar-group rect.dimmed {
+#age-chart .age.bar-group rect.dimmed {
   opacity: .2;
 }
 
-#age .brush rect {
+#age-chart .brush rect {
   fill: #000;
   opacity: .125;
 }
@@ -33,12 +33,12 @@ body {
   fill: #fb9a99;
 }
 
-#pclass .bar-group rect {
+#pclass-chart .bar-group rect {
   fill: #ffff99;
   stroke: #000;
 }
 
-#pclass .bar.text {
+#pclass-chart .bar.text {
   color: black;
   text-shadow: none;
   font-size: 90%;
@@ -67,22 +67,22 @@ body {
   stroke: #000;
 }
 
-#age .x.axis path, #age .y.axis path {
+#age-chart .x.axis path, #age-chart .y.axis path {
   fill: none;
   stroke: #000;
 }
 
-#age .x.axis line, #age .y.axis line {
+#age-chart .x.axis line, #age-chart .y.axis line {
   shape-rendering: crispEdges;
   stroke: #000;
 }
 
-#pclass .x.axis path {
+#pclass-chart .x.axis path {
   fill: none;
   stroke: #000;
 }
 
-#pclass .x.axis line {
+#pclass-chart .x.axis line {
   shape-rendering: crispEdges;
   stroke: #000;
 }
