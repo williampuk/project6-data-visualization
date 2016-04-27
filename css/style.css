@@ -24,6 +24,16 @@ body {
   fill: #fb9a99;
 }
 
+#pclass .bar-group rect {
+  fill: #ffff99;
+  stroke: #000;
+}
+
+#pclass .bar.text {
+  color: black;
+  text-shadow: none;
+  font-size: 90%;
+}
 /* Axes */
 
 .axis {
@@ -54,6 +64,16 @@ body {
 }
 
 #age .x.axis line, #age .y.axis line {
+  shape-rendering: crispEdges;
+  stroke: #000;
+}
+
+#pclass .x.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#pclass .x.axis line {
   shape-rendering: crispEdges;
   stroke: #000;
 }
