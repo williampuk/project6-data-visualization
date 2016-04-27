@@ -11,8 +11,17 @@ body {
   fill: #e31a1c;
 }
 
-.age.bar-group {
+#age .age.bar-group {
   fill: #6a3d9a;
+}
+
+#age .age.bar-group rect.dimmed {
+  opacity: .2;
+}
+
+#age .brush rect {
+  fill: #000;
+  opacity: .125;
 }
 
 .male.bar-group {
