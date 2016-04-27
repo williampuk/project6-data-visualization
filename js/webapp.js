@@ -640,7 +640,7 @@ var app = function(d3, dimple, $) {
   }
 
   function init() {
-    d3.csv('/data/titanic.csv', function(row) {
+    d3.csv('data/titanic.csv', function(row) {
       row.PassengerId = +row.PassengerId;
       row.Survived = +row.Survived;
       row.SurvivedBool = row.Survived === 1;
