@@ -13,16 +13,33 @@
     <div class="container-fluid">
         <div class="row">
             <div id="survival-focus" class="col-md-12">
+                <div>
+                    <h4>A bar chart of survived and perished passengers</h4></div>
                 <div id="survival"></div>
                 <div id="survival-ratio"></div>
             </div>
         </div>
         <div class="row">
-            <div id="age" class="col-md-12"></div>
+            <div class="col-md-12">
+                <div>
+                    <h4>A histogram of the distribution of ages of the passengers</h4>
+                    <div>Select an area on the histogram to filter the data and see the effect.</div>
+                    <div>(Note: Once the data is filtered by an age range, the data will not include all the passenger whose ages are unknown in the source data.)</div>
+                </div>
+                <div id="age-chart"></div>
+            </div>
         </div>
         <div class="row">
-            <div id="sex" class="col-md-7 col-sm-6"></div>
-            <div id="pclass" class="col-md-5 col-sm-6"></div>
+            <div class="col-md-7 col-sm-6">
+                <div>
+                    <h4>The ratio of the sex of passengers</h4></div>
+                <div id="sex-chart"></div>
+            </div>
+            <div class="col-md-5 col-sm-6">
+                <div>
+                    <h4>A bar chart of the passenger class of passengers</h4></div>
+                <div id="pclass-chart"></div>
+            </div>
         </div>
     </div>
     <script src="js/babel-polyfill/polyfill.min.js"></script>
