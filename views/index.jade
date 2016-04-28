@@ -6,10 +6,10 @@ block content
   div.container-fluid
     div.row
       div#survival-focus.col-md-12
-        div
+        div.header-text
           h4 A bar chart of survived and perished passengers
-        div#survival
-        div#survival-ratio
+        div#survival.inline-block-align-top
+        div#survival-ratio.inline-block-align-top
     div.row
       div.col-md-12
         div
@@ -18,14 +18,15 @@ block content
           div (Note: Once the data is filtered by an age range, the data will not include all the passenger whose ages are unknown in the source data.)
         div#age-chart
     div.row
-      div.col-md-7.col-sm-6
-        div
-          h4 The ratio of the sex of passengers
-        div#sex-chart
-      div.col-md-5.col-sm-6
-        div
-          h4 A bar chart of the passenger class of passengers
-        div#pclass-chart
+      div.col-md-12
+        div.inline-block-align-top
+          div
+            h4 The ratio of the sex of passengers
+          div#sex-chart
+        div.inline-block-align-top
+          div
+            h4 A bar chart of the passenger class of passengers
+          div#pclass-chart
 
   script(src='/js/babel-polyfill/polyfill.min.js')
   script(src='/js/jquery/jquery.js')
