@@ -49,8 +49,9 @@ body {
   font-size: 75%;
 }
 
-#survival-focus div {
+div.inline-block-align-top {
   display: inline-block;
+  vertical-align: top;
 }
 
 #survival .y.axis path {

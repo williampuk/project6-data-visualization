@@ -1,4 +1,4 @@
-var app = function(d3, dimple, $) {
+var app = function(d3, $) {
   "use strict";
 
   var fullData,
@@ -403,7 +403,7 @@ var app = function(d3, dimple, $) {
     }
     var margin = {
         top: 5,
-        left: 30,
+        left: 10,
         bottom: 10,
         right: 30
       },
@@ -718,6 +718,6 @@ var app = function(d3, dimple, $) {
   return {
     init: init
   };
-}(d3, dimple, jQuery);
+}(d3, jQuery);
 
 jQuery(app.init);

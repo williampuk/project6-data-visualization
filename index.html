@@ -3,8 +3,8 @@
 
 <head>
     <title>Data Visualization of Titanic Data</title>
-    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
 </head>
 
 <body>
@@ -13,10 +13,10 @@
     <div class="container-fluid">
         <div class="row">
             <div id="survival-focus" class="col-md-12">
-                <div>
+                <div class="header-text">
                     <h4>A bar chart of survived and perished passengers</h4></div>
-                <div id="survival"></div>
-                <div id="survival-ratio"></div>
+                <div id="survival" class="inline-block-align-top"></div>
+                <div id="survival-ratio" class="inline-block-align-top"></div>
             </div>
         </div>
         <div class="row">
@@ -30,23 +30,24 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-7 col-sm-6">
-                <div>
-                    <h4>The ratio of the sex of passengers</h4></div>
-                <div id="sex-chart"></div>
-            </div>
-            <div class="col-md-5 col-sm-6">
-                <div>
-                    <h4>A bar chart of the passenger class of passengers</h4></div>
-                <div id="pclass-chart"></div>
+            <div class="col-md-12">
+                <div class="inline-block-align-top">
+                    <div>
+                        <h4>The ratio of the sex of passengers</h4></div>
+                    <div id="sex-chart"></div>
+                </div>
+                <div class="inline-block-align-top">
+                    <div>
+                        <h4>A bar chart of the passenger class of passengers</h4></div>
+                    <div id="pclass-chart"></div>
+                </div>
             </div>
         </div>
     </div>
-    <script src="js/babel-polyfill/polyfill.min.js"></script>
-    <script src="js/jquery/jquery.js"></script>
-    <script src="js/d3/d3.js"></script>
-    <script src="js/dimple/dimple.v2.2.0.js"></script>
-    <script src="js/webapp.js"></script>
+    <script src="/js/babel-polyfill/polyfill.min.js"></script>
+    <script src="/js/jquery/jquery.js"></script>
+    <script src="/js/d3/d3.js"></script>
+    <script src="/js/webapp.js"></script>
 </body>
 
 </html>
