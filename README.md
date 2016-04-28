@@ -24,3 +24,11 @@ Perceptual Edge articles
 - https://www.perceptualedge.com/articles/visual_business_intelligence/save_the_pies_for_dessert.pdf
 - https://www.perceptualedge.com/articles/visual_business_intelligence/rules_for_using_color.pdf
 - https://www.perceptualedge.com/articles/b-eye/choosing_colors.pdf
+
+Miscellaneous tutorial/forum pages
+  - Stack Overflow
+  > http://stackoverflow.com/questions/14958825/dynamically-update-chart-data-in-d3
+
+  - Mozilla Developer Network (https://developer.mozilla.org)
+
+  - w3schools.com (http://www.w3schools.com/)
