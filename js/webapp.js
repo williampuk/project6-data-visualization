@@ -737,11 +737,12 @@ var app = function(d3, $) {
     var pclass = dataFilters.pclass;
     if ($.isEmptyObject(pclass) || !$.isArray(pclass)) {
       d3.selectAll(".pclass-not-restricted-label").classed("hidden", false);
-      d3.selectAll(".selected-pclass-label").classed("hidden", true);
-    } else {
+      d3.selectAll("#selected-pclass-label").classed("hidden", true);
+    } else if ($.isArray(pclass)){
       d3.selectAll(".pclass-not-restricted-label").classed("hidden", true);
-      d3.selectAll(".selected-pclass-label").classed("hidden", false);
-      var pclassSpans = d3.selectAll(".selected-pclass-label span")
+      d3.select("#selected-pclass-label").classed("hidden", false);
+      var pclassSpans = d3.select("#selected-pclass-label")
+        .selectAll("span")
         .data(pclass, function(d) {
           console.log(d);
           return d;
@@ -774,7 +775,8 @@ var app = function(d3, $) {
     }, {
       id: "narrative-4",
       timeout: 6000,
-      toAge: 10
+      toAge: 10,
+      toAgeSpeed: 400
     }, {
       id: "narrative-5",
       timeout: 3000
@@ -784,10 +786,10 @@ var app = function(d3, $) {
       toAge: maxAge + 1
     }, {
       id: "narrative-7",
-      timeout: 6000
+      timeout: 4000
     }, {
       id: "narrative-8",
-      timeout: 10000
+      timeout: 6000
     }, {
       id: "narrative-9",
       timeout: 3000,
@@ -893,7 +895,7 @@ var app = function(d3, $) {
             clearInterval(increaseAgeInterval);
             waitFor.ageAnimateEnd = true;
           }
-        }, 500);
+        }, currNarrative.toAgeSpeed ? currNarrative.toAgeSpeed : 200);
       }
       if ($.isArray(currNarrative.sex)) {
         dataFilters.sex = currNarrative.sex.slice();

@@ -95,6 +95,6 @@ div.inline-block-align-top {
 }
 
 /* comma */
-.selected-pclass-label span:last-of-type span.comma {
+#selected-pclass-label span:last-of-type span.comma {
   display: none;
 }
