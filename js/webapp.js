@@ -1,26 +1,29 @@
 var app = function(d3, $) {
   "use strict";
 
-  var fullData,
-    pclassMap = {
+  var fullData, maxAge, minAge;
+
+  var pclassMap = {
       1: "Upper",
       2: "Middle",
       3: "Lower"
-    },
-    chartSvgs = {
+    };
+
+  var chartSvgs = {
       survivalChart: undefined,
       survivalStack: undefined,
       ageHistogram: undefined,
       sexChart: undefined,
       pclassChart: undefined
-    },
-    dataFilters = {
+    };
+
+  var dataFilters = {
       ageRange: [],
       sex: [],
       pclass: []
     };
 
-  function updateSurvivalCount(data) {
+  function getSurvivalCount(data) {
     var survived = d3.sum(data, function(d) {
       return d.Survived;
     });
@@ -33,7 +36,7 @@ var app = function(d3, $) {
     }];
   }
 
-  function updateSexCount(data) {
+  function getSexCount(data) {
     var male = d3.sum(data, function(d) {
       return +(d.Sex === "male");
     });
@@ -46,7 +49,7 @@ var app = function(d3, $) {
     }];
   }
 
-  function updatePclassCount(data) {
+  function getPclassCount(data) {
     var upper = 0,
       middle = 0,
       lower = 0;
@@ -73,7 +76,7 @@ var app = function(d3, $) {
 
   function drawSurvivalChart(survivalData, isRedraw) {
     var margin = {
-        top: 10,
+        top: 0,
         left: 50,
         bottom: 10,
         right: 35
@@ -180,9 +183,9 @@ var app = function(d3, $) {
 
   function drawSurvivalStack(survivalData, isRedraw) {
     var margin = {
-        top: 5,
+        top: 10,
         left: 20,
-        bottom: 5,
+        bottom: 10,
         right: 2
       },
       axisPadding = 0,
@@ -597,17 +600,25 @@ var app = function(d3, $) {
     };
   }
 
+  function dimUnselectedAgeRange(ageRange) {
+    chartSvgs.ageHistogram.svg.selectAll("rect.age-data")
+      .classed("dimmed", function(d) {
+        return d.x < ageRange[0] || d.x >= ageRange[1];
+      });
+  }
+
   function drawAgeHistogramBrush(data) {
+
+    d3.select("div#brush-help-text")
+      .classed("hidden", false);
+
     var brush = d3.svg.brush()
       .x(chartSvgs.ageHistogram.xScale)
       .on("brush", function(p) {
         console.log(brush.extent(), p);
         var extent = brush.extent();
         var ageRange = [Math.ceil(extent[0]), Math.floor(extent[1])];
-        chartSvgs.ageHistogram.svg.selectAll("rect.age-data")
-          .classed("dimmed", function(d) {
-            return d.x < ageRange[0] || d.x >= ageRange[1];
-          });
+        dimUnselectedAgeRange(ageRange);
         dataFilters.ageRange = ageRange;
         redrawWithFilteredDate(chartSvgs.ageHistogram);
       })
@@ -634,24 +645,11 @@ var app = function(d3, $) {
       });
   }
 
-  function draw(data) {
-    fullData = data;
-    var survivalData = updateSurvivalCount(data);
-    var sexData = updateSexCount(data);
-    var pclassData = updatePclassCount(data);
-    drawSurvivalChart(survivalData);
-    drawSurvivalStack(survivalData);
-    drawAgeHistogram(data);
-    drawSexStack(sexData);
-    drawPclassChart(pclassData);
-    drawAgeHistogramBrush(data);
-  }
-
   function redrawWithFilteredDate(excludedCharts) {
     var data = filterData(fullData);
-    var survivalData = updateSurvivalCount(data);
-    var sexData = updateSexCount(data);
-    var pclassData = updatePclassCount(data);
+    var survivalData = getSurvivalCount(data);
+    var sexData = getSexCount(data);
+    var pclassData = getPclassCount(data);
 
     function shouldUpdate(chart) {
       if ($.isArray(excludedCharts)) {
@@ -660,6 +658,8 @@ var app = function(d3, $) {
         return excludedCharts !== chart;
       }
     }
+
+    drawDataLabels(data);
 
     if (shouldUpdate(chartSvgs.survivalChart)) {
       drawSurvivalChart(survivalData, true);
@@ -696,6 +696,171 @@ var app = function(d3, $) {
         return false;
       }
       return true;
+    });
+  }
+
+  function initDrawDataLabels() {
+    var numOfSamplesWithAge = $.grep(fullData, function(d) {
+      return d.Age !== null;
+    }).length;
+    d3.selectAll(".rows-of-dataset").html(fullData.length);
+    d3.selectAll(".rows-of-age-data").html(numOfSamplesWithAge);
+  }
+
+  function drawDataLabels(data) {
+    d3.selectAll(".current-rows-of-dataset").html(data.length);
+
+    var ageRange = dataFilters.ageRange;
+    if ($.isEmptyObject(ageRange) || !$.isArray(ageRange)) {
+      d3.selectAll(".age-not-restricted-label").classed("hidden", false);
+      d3.selectAll(".age-range").classed("hidden", true);
+    } else {
+      d3.selectAll(".age-not-restricted-label").classed("hidden", true);
+      d3.selectAll(".age-range").classed("hidden", false);
+      d3.selectAll(".lower-age").html(ageRange[0]);
+      d3.selectAll(".upper-age").html(ageRange[1]);
+    }
+
+    var sex = dataFilters.sex;
+    if ($.isEmptyObject(sex) || !$.isArray(sex)) {
+      d3.selectAll(".sex-not-restricted-label").classed("hidden", false);
+      d3.selectAll(".selected-sex-label").classed("hidden", true);
+    } else {
+      d3.selectAll(".sex-not-restricted-label").classed("hidden", true);
+      d3.selectAll(".selected-sex-label").classed("hidden", false);
+      d3.selectAll(".selected-male-label").classed("hidden", sex.indexOf("Male") < 0);
+      d3.selectAll(".selected-female-label").classed("hidden", sex.indexOf("Female") < 0);
+    }
+
+    var pclass = dataFilters.pclass;
+    if ($.isEmptyObject(pclass) || !$.isArray(pclass)) {
+      d3.selectAll(".pclass-not-restricted-label").classed("hidden", false);
+      d3.selectAll(".selected-pclass-label").classed("hidden", true);
+    } else {
+      d3.selectAll(".pclass-not-restricted-label").classed("hidden", true);
+      d3.selectAll(".selected-pclass-label").classed("hidden", false);
+      d3.selectAll(".selected-male-label").classed("hidden", sex.indexOf("Male") < 0);
+      d3.selectAll(".selected-pclass-label span")
+        .remove();
+      d3.selectAll(".selected-pclass-label span")
+        .data(pclass)
+        .enter()
+        .html(function(d) {return d + '<span class="comma">,</span>';});
+    }
+  }
+
+  function performNarrativeAnimation(callback) {
+    var ageNarrative = [{
+      id: "narrative-0",
+      timeout: 3000
+    }, {
+      id: "narrative-1",
+      timeout: 3000
+    }, {
+      id: "narrative-2",
+      timeout: 3000
+    }, {
+      id: "narrative-3",
+      timeout: 3000
+    }, {
+      id: "narrative-4",
+      timeout: 6000,
+      toAge: 10
+    }, {
+      id: "narrative-5",
+      timeout: 3000
+    }, {
+      id: "narrative-6",
+      timeout: 10000,
+      toAge: maxAge + 1
+    }, {
+      id: "narrative-7",
+      timeout: 3000
+    }, {
+      id: "narrative-8",
+      timeout: 3000,
+      waitFor: function() {
+        return waitFor.ageAnimateEnd;
+      }
+    }];
+    var currCount = 0;
+    var waitFor = {};
+
+    function doAnimate() {
+      var currNarrative = ageNarrative[currCount++];
+      if(!currNarrative) {
+        endNarrative();
+      }
+      if (typeof currNarrative.waitFor === "function") {
+        if (!currNarrative.waitFor()) {
+          currCount--;
+          setTimeout(doAnimate, 500);
+          return;
+        }
+      }
+      d3.selectAll("#narrative > div.show")
+        .classed("show", false);
+
+      d3.select("#" + currNarrative.id)
+        .classed("show", true)
+        .attr("opacity", 0)
+        .transition()
+        .duration(1000)
+        .attr("opacity", 100);
+
+      if (currNarrative.toAge) {
+        waitFor.ageAnimateEnd = false;
+        if ($.isEmptyObject(dataFilters.ageRange)) {
+          dataFilters.ageRange = [0, 1];
+          dimUnselectedAgeRange(dataFilters.ageRange);
+          redrawWithFilteredDate(chartSvgs.ageHistogram);
+        }
+        var currAgeUpperLimit = dataFilters.ageRange[1];
+        var increaseAgeInterval = setInterval(function() {
+          dataFilters.ageRange[1] += 1;
+          dimUnselectedAgeRange(dataFilters.ageRange);
+          redrawWithFilteredDate(chartSvgs.ageHistogram);
+
+          if(dataFilters.ageRange[1] >= currNarrative.toAge) {
+              clearInterval(increaseAgeInterval);
+              waitFor.ageAnimateEnd = true;
+          }
+        }, 500);
+      }
+      setTimeout(doAnimate, currNarrative.timeout);
+    }
+
+    function startNarrative() {
+      d3.select("#narrative-panel").classed("hidden", false);
+      doAnimate();
+    }
+
+    function endNarrative() {
+      d3.select("#narrative-panel").classed("hidden", true);
+      if (typeof callback === "function") {
+        callback();
+      }
+    }
+
+    setTimeout(startNarrative, 100);
+  }
+
+  function draw(data) {
+    fullData = data;
+    maxAge = d3.max(fullData, function(d) { return d.Age; });
+    minAge = d3.min(fullData, function(d) { return d.Age; });
+    initDrawDataLabels();
+    drawDataLabels(data);
+    var survivalData = getSurvivalCount(data);
+    var sexData = getSexCount(data);
+    var pclassData = getPclassCount(data);
+    drawSurvivalChart(survivalData);
+    drawSurvivalStack(survivalData);
+    drawAgeHistogram(data);
+    drawSexStack(sexData);
+    drawPclassChart(pclassData);
+    performNarrativeAnimation(function() {
+      drawAgeHistogramBrush(data);
     });
   }
 
