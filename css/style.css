@@ -1,5 +1,11 @@
+/* common */
+
 body {
   padding: 0 50px;
+}
+
+#narrative > div {
+  display:none;
 }
 
 /* Chart Colors */
@@ -86,4 +92,9 @@ div.inline-block-align-top {
 #pclass-chart .x.axis line {
   shape-rendering: crispEdges;
   stroke: #000;
+}
+
+/* comma */
+.selected-pclass-label span:last-of-type span.comma {
+  display: none;
 }
