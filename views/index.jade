@@ -25,15 +25,40 @@ block content
             div#narrative-7
               strong Since the selection includes age 10 onwards, the survival rate has never been more than 60%.
             div#narrative-8
-              strong Thank you for watching the visualization. You can now use the brush on the age chart to do your own exploration.
-    div.panel.panel-default
+              strong We can see the overall trend is that, as the upper bound of the selection increases with age, survival rate decreases.
+            div#narrative-9
+              strong We can see the overall trend is that, as the upper bound of the selection increases with age, survival rate decreases.
+            div#narrative-10
+              strong Let's go back to the whole set of data. Next, we will see which sex group has the highest survival rate.
+            div#narrative-11
+              strong First, only the data of male passengers are selected.
+            div#narrative-12
+              strong Then, only the data of female passengers are selected.
+            div#narrative-13
+              strong It is obvious that the survival rate of female passengers is much higher than that of male passengers.
+            div#narrative-14
+              strong Finally, we are going to explore which passenger class has the highest survival rate.
+            div#narrative-15
+              strong First, only the data of passengers in lower class are selected.
+            div#narrative-16
+              strong Then, only the data of passengers in middle class are selected.
+            div#narrative-17
+              strong Lastly, only the data of passengers in upper class are selected.
+            div#narrative-18
+              strong It is obvious that the survival rate of passengers in upper class is much higher than those of other 2 classes.
+            div#narrative-19
+              strong We have finished watching the visualization of how survival rate changes with each of the three passengers' attributes.
+            div#narrative-20
+              strong You can now freely use the brush or click on the class label to explore the data in different combination of selection. Thanks for watching.
+
+    div#current-data-selection.panel.panel-default
       div.panel-heading
         div Current data selection
       div.panel-body
         div.row
           div.col-md-2.col-sm-6 No. of samples: #[span.current-rows-of-dataset]
           div.col-md-4.col-sm-6 Age Range: #[span.hidden.age-range #[span.lower-age] (inclusive) to #[span.upper-age] (exclusive)] #[span.age-not-restricted-label Not Restricted]
-          div.col-md-3.col-sm-6 Sex: #[span.hidden.selected-sex-label [span.selected-male-label Male] #[span.selected-female-label Female]] #[span.sex-not-restricted-label Not Restricted]
+          div.col-md-3.col-sm-6 Sex: #[span.hidden.selected-sex-label #[span.selected-male-label Male] #[span.selected-female-label Female]] #[span.sex-not-restricted-label Not Restricted]
           div.col-md-3.col-sm-6 Passenger Class: #[span.hidden.selected-pclass-label #[span.selected-lower-label Lower] #[span.selected-middle-label Middle] #[span.selected-upper-label Upper]] #[span.pclass-not-restricted-label Not Restricted]
     div.row
       div#survival-focus.col-md-12
