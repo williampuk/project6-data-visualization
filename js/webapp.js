@@ -7,6 +7,8 @@ var app = function(d3, $) {
 
   var survivalLabels = ["Survived", "Perished"];
 
+  var sexLabels = ["Female", "Male"];
+
   var pclassMap = {
     1: "Upper",
     2: "Middle",
@@ -14,12 +16,13 @@ var app = function(d3, $) {
   };
 
   var chartSvgs = {
-    survivalChart: undefined,
-    survivalStack: undefined,
-    ageHistogram: undefined,
-    sexChart: undefined,
-    pclassChart: undefined,
-    stackedAgeHistogram: undefined
+    survivalChart: {},
+    survivalStack: {},
+    ageHistogram: {},
+    sexChart: {},
+    pclassChart: {},
+    stackedAgeHistogram: {},
+    stackedSexBarChart: {}
   };
 
   var dataFilters = {
@@ -338,7 +341,7 @@ var app = function(d3, $) {
         })
       });
     });
-    console.log(layeredData);
+
     var stack = d3.layout.stack().values(function(d) { return d.values; });
     var stackedData = stack(layeredData);
 
@@ -454,6 +457,137 @@ var app = function(d3, $) {
     };
   }
 
+  function drawStackedSexBarCheck(data, isRedraw) {
+    var margin = {
+      top: 5,
+      left: 50,
+      bottom: 30,
+      right: 30
+    },
+      width = 500,
+      barHeight = 20,
+      height = 30;
+    var survivalData = {};
+    survivalData.Survived = data.filter(function (d) {
+      return d.Survived === 1;
+    });
+    survivalData.Perished = data.filter(function (d) {
+      return d.Survived === 0;
+    });
+    var layeredData = [];
+    survivalLabels.forEach(function (group) {
+      layeredData.push({
+        name: group,
+        values: sexLabels.map(function (sexLabel) {
+          return {
+            x: sexLabel,
+            y: d3.sum(survivalData[group], function (d) {
+              return d.Sex === sexLabel.toLowerCase() ? 1 : 0;
+            })
+          };
+        })
+      });
+    });
+
+    var stack = d3.layout.stack().values(function (d) { return d.values; });
+    var stackedData = stack(layeredData);
+
+    var svg = isRedraw ? chartSvgs.stackedSexBarChart.svg :
+      d3.select('div#stacked-sex-chart')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append("g")
+        .attr({
+          transform: "translate(" + margin.left + "," + margin.top + ")",
+          class: 'main-group'
+        });
+
+    var xScale = isRedraw ? chartSvgs.stackedSexBarChart.xScale : d3.scale.linear()
+      .range([0, width]);
+
+    xScale.domain([0, d3.max(stackedData[stackedData.length - 1].values, function (topStack) {
+      return topStack.y0 + topStack.y;
+    })]);
+
+    var yScale = isRedraw ? chartSvgs.stackedSexBarChart.yScale : d3.scale.ordinal()
+      .domain(stackedData[0].values.map(function (d) { return d.x; }))
+      .rangeRoundBands([0, height], 0.2);
+
+    // Bar Groups
+    var barGroups = svg.selectAll("g.bar-group")
+      .data(stackedData, function (d) {
+        return d.name;
+      });
+    barGroups.enter()
+      .append("g")
+      .attr("class", function (d) {
+        return d.name + " bar-group";
+      });
+
+    // Bar Group Rects
+    var barGroupRects =
+      barGroups
+        .selectAll("rect.survival-per-sex")
+        .data(function (d) {
+          return d.values;
+        }, function (d) {
+          return d.x;
+        });
+
+    barGroupRects
+      .enter()
+      .append("rect")
+      .attr({
+        class: "survival-per-sex",
+        height: yScale.rangeBand()
+      });
+
+    barGroupRects
+      .attr("x", function (d) {
+        return xScale(d.y0);
+      })
+      .attr("width", function (d) {
+        return xScale(d.y);
+      })
+      .attr("y", function (d) {
+        return yScale(d.x);
+      });
+
+    // Axes
+
+    var xAxis = d3.svg.axis()
+      .orient("bottom")
+      .scale(xScale);
+    var xAxisGroup = isRedraw ? svg.select("g.x.axis") :
+      svg.append("g")
+        .attr({
+          class: "x axis",
+          transform: "translate(0, " + height + ")"
+        });
+    xAxisGroup.call(xAxis);
+
+    if (!isRedraw) {
+      var yAxis = d3.svg.axis()
+        .scale(yScale)
+        .orient("left");
+
+      svg.append("g")
+        .attr({
+          class: "y axis"
+        })
+        .call(yAxis);
+
+      chartSvgs.stackedSexBarChart = {
+        svg: svg,
+        xScale: xScale,
+        yScale: yScale,
+        margin: margin,
+        height: height,
+        width: width
+      };
+    }
+  }
 
   function drawAgeHistogram(data, isRedraw) {
     var rowsWithAge = [],
@@ -1134,6 +1268,7 @@ var app = function(d3, $) {
     drawSurvivalStack(survivalData);
     drawAgeHistogram(data);
     drawStackedAgeHistogram(data);
+    drawStackedSexBarCheck(data);
     drawSexStack(sexData);
     drawPclassChart(pclassData);
     performNarrativeAnimation(function() {

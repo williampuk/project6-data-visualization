@@ -35,6 +35,14 @@ text.bar.text {
   fill: #e31a1c;
 }
 
+#stacked-sex-chart  .Survived.bar-group {
+  fill: #33a02c;
+}
+
+#stacked-sex-chart  .Perished.bar-group {
+  fill: #e31a1c;
+}
+
 #age-chart .age.bar-group {
   fill: #6a3d9a;
 }
@@ -108,6 +116,16 @@ div.inline-block-align-top {
 }
 
 #age-chart .x.axis line, #age-chart .y.axis line {
+  shape-rendering: crispEdges;
+  stroke: #000;
+}
+
+#stacked-sex-chart .x.axis path, #stacked-sex-chart  .y.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#stacked-sex-chart  .x.axis line, #stacked-sex-chart  .y.axis line {
   shape-rendering: crispEdges;
   stroke: #000;
 }
