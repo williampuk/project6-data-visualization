@@ -8,6 +8,16 @@ body {
   display:none;
 }
 
+#current-data-selection .panel-heading, #current-data-selection .panel-body {
+  padding-top : 5px;
+  padding-bottom: 5px;
+}
+
+/* Clickable label */
+text.bar.text {
+  cursor: pointer;
+}
+
 /* Chart Colors */
 .survived.bar-group {
   fill: #33a02c;
@@ -95,6 +105,6 @@ div.inline-block-align-top {
 }
 
 /* comma */
-.selected-pclass-label span:last-of-type span.comma {
+#selected-pclass-label span:last-of-type span.comma {
   display: none;
 }
