@@ -3,6 +3,8 @@ var app = function(d3, $) {
 
   var fullData, maxAge, minAge;
 
+  var isSexLabelClickable = false, isPclassLabelClickable = false;
+
   var pclassMap = {
     1: "Upper",
     2: "Middle",
@@ -314,10 +316,7 @@ var app = function(d3, $) {
       axisPadding = 0,
       width = 1000,
       barWidth = 20,
-      height = 300,
-      maxAge = d3.max(rowsWithAge, function(d) {
-        return d.Age;
-      });
+      height = 300;
     // Scales
     // xScale is kept unchanged on purpose
     var xScale = isRedraw ? chartSvgs.ageHistogram.xScale : d3.scale.linear()
@@ -366,16 +365,18 @@ var app = function(d3, $) {
         return height - yScale(d.y);
       });
     // Axes
-    var xAxis = d3.svg.axis()
-      .orient("bottom")
-      .ticks(16)
-      .scale(xScale);
-    svg.append("g")
-      .attr({
-        class: "x axis",
-        transform: "translate(" + axisPadding + ", " + height + ")"
-      })
-      .call(xAxis);
+    if (!isRedraw) {
+      var xAxis = d3.svg.axis()
+        .orient("bottom")
+        .ticks(16)
+        .scale(xScale);
+      svg.append("g")
+        .attr({
+          class: "x axis",
+          transform: "translate(" + axisPadding + ", " + height + ")"
+        })
+        .call(xAxis);
+    }
     var yAxis = d3.svg.axis()
       .scale(yScale)
       .orient("left");
@@ -482,6 +483,18 @@ var app = function(d3, $) {
           "class": "bar text",
           'alignment-baseline': 'text-before-edge',
           'text-anchor': 'middle'
+        }).on("click", function(d) {
+          if (isSexLabelClickable) {
+            var sex = d.x.toLowerCase();
+            if ($.isEmptyObject(dataFilters.sex)) {
+              dataFilters.sex.push(sex);
+            } else if (dataFilters.sex.indexOf(sex) >= 0 && dataFilters.sex.length > 1) {
+              dataFilters.sex.splice(dataFilters.sex.indexOf(sex), 1);
+            } else {
+              dataFilters.sex = [];
+            }
+            redrawWithFilteredDate();
+          }
         });
     }
     barGroupTexts.text(function(d) {
@@ -572,6 +585,21 @@ var app = function(d3, $) {
       })
       .attr("transform", function(d) {
         return "translate( " + xScale.rangeBand() / 2 + ", -2)";
+      }).on("click", function(d) {
+        if (isSexLabelClickable) {
+          var pclassId = Object.keys(pclassMap).filter(function(k) {
+            return pclassMap[k] === d.catagory;
+          });
+          if ($.isEmptyObject(dataFilters.pclass) ||
+            (dataFilters.pclass.indexOf(pclassId) < 0 && dataFilters.pclass.length < 2)) {
+            dataFilters.pclass.push(pclassId);
+          } else if (dataFilters.pclass.indexOf(pclassId) >= 0 && dataFilters.pclass.length > 1) {
+            dataFilters.pclass.splice(dataFilters.pclass.indexOf(pclassId), 1);
+          } else {
+            dataFilters.pclass = [];
+          }
+          redrawWithFilteredDate();
+        }
       });
     barGroupTexts.text(function(d) {
       return d.count + (totalCount === 0 ? "" : " (" + Math.round(d.count / totalCount * 1000) / 10 + "%)");
@@ -612,7 +640,7 @@ var app = function(d3, $) {
     }
   }
 
-  function drawAgeHistogramBrush(data) {
+  function drawAgeHistogramBrush() {
 
     d3.select("div#brush-help-text")
       .classed("hidden", false);
@@ -645,6 +673,10 @@ var app = function(d3, $) {
         transform: "translate(0, -2)",
         height: chartSvgs.ageHistogram.height + 2
       });
+  }
+
+  function makeSexLabelClickable(clickable) {
+    isSexLabelClickable = clickable;
   }
 
   function redrawWithFilteredDate(excludedCharts) {
@@ -942,7 +974,8 @@ var app = function(d3, $) {
     drawSexStack(sexData);
     drawPclassChart(pclassData);
     performNarrativeAnimation(function() {
-      drawAgeHistogramBrush(data);
+      drawAgeHistogramBrush();
+      makeSexLabelClickable(true);
     });
   }
 

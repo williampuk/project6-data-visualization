@@ -8,6 +8,11 @@ body {
   display:none;
 }
 
+/* Clickable label */
+text.bar.text {
+  cursor: pointer;
+}
+
 /* Chart Colors */
 .survived.bar-group {
   fill: #33a02c;
