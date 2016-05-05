@@ -8,6 +8,11 @@ body {
   display:none;
 }
 
+#current-data-selection .panel-heading, #current-data-selection .panel-body {
+  padding-top : 5px;
+  padding-bottom: 5px;
+}
+
 /* Clickable label */
 text.bar.text {
   cursor: pointer;

@@ -585,21 +585,23 @@ var app = function(d3, $) {
       })
       .attr("transform", function(d) {
         return "translate( " + xScale.rangeBand() / 2 + ", -2)";
-      }).on("click", function(d) {
-        if (isSexLabelClickable) {
-          var pclassId = Object.keys(pclassMap).filter(function(k) {
-            return pclassMap[k] === d.catagory;
-          });
-          if ($.isEmptyObject(dataFilters.pclass) ||
-            (dataFilters.pclass.indexOf(pclassId) < 0 && dataFilters.pclass.length < 2)) {
-            dataFilters.pclass.push(pclassId);
-          } else if (dataFilters.pclass.indexOf(pclassId) >= 0 && dataFilters.pclass.length > 1) {
-            dataFilters.pclass.splice(dataFilters.pclass.indexOf(pclassId), 1);
-          } else {
-            dataFilters.pclass = [];
+      })
+      .on("click", function(d) {
+          if (isSexLabelClickable) {
+            var pclassId = +Object.keys(pclassMap).filter(function(k) {
+              return pclassMap[k] === d.category;
+            })[0];
+            if ($.isEmptyObject(dataFilters.pclass) ||
+              (dataFilters.pclass.indexOf(pclassId) < 0 && dataFilters.pclass.length < 2)) {
+              dataFilters.pclass.push(pclassId);
+            } else if (dataFilters.pclass.indexOf(pclassId) >= 0 && dataFilters.pclass.length > 1) {
+              dataFilters.pclass.splice(dataFilters.pclass.indexOf(pclassId), 1);
+            } else {
+              dataFilters.pclass = [];
+            }
+            dataFilters.pclass.sort();
+            redrawWithFilteredDate();
           }
-          redrawWithFilteredDate();
-        }
       });
     barGroupTexts.text(function(d) {
       return d.count + (totalCount === 0 ? "" : " (" + Math.round(d.count / totalCount * 1000) / 10 + "%)");
@@ -681,6 +683,7 @@ var app = function(d3, $) {
 
   function redrawWithFilteredDate(excludedCharts) {
     var data = filterData(fullData);
+    var dataPreservingAllAges = filterData(fullData, true)
     var survivalData = getSurvivalCount(data);
     var sexData = getSexCount(data);
     var pclassData = getPclassCount(data);
@@ -702,7 +705,7 @@ var app = function(d3, $) {
       drawSurvivalStack(survivalData, true);
     }
     if (shouldUpdate(chartSvgs.ageHistogram)) {
-      drawAgeHistogram(data, true);
+      drawAgeHistogram(dataPreservingAllAges, true);
     }
     if (shouldUpdate(chartSvgs.sexChart)) {
       drawSexStack(sexData, true);
@@ -712,9 +715,9 @@ var app = function(d3, $) {
     }
   }
 
-  function filterData(data) {
+  function filterData(data, preserveAllAges) {
     return $.grep(data, function(d) {
-      if (!$.isEmptyObject(dataFilters.ageRange)) {
+      if (!preserveAllAges && !$.isEmptyObject(dataFilters.ageRange)) {
         if (d.Age === null) {
           return false;
         } else if (d.Age < dataFilters.ageRange[0] || d.Age >= dataFilters.ageRange[1]) {
@@ -882,6 +885,7 @@ var app = function(d3, $) {
       id: "narrative-20",
       timeout: 5000
     }];
+    ageNarrative = [];
     var currCount = 0;
     var waitFor = {};
 
