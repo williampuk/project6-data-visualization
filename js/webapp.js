@@ -5,6 +5,8 @@ var app = function(d3, $) {
 
   var isSexLabelClickable = false, isPclassLabelClickable = false;
 
+  var survivalLabels = ["Survived", "Perished"];
+
   var pclassMap = {
     1: "Upper",
     2: "Middle",
@@ -16,7 +18,8 @@ var app = function(d3, $) {
     survivalStack: undefined,
     ageHistogram: undefined,
     sexChart: undefined,
-    pclassChart: undefined
+    pclassChart: undefined,
+    stackedAgeHistogram: undefined
   };
 
   var dataFilters = {
@@ -296,6 +299,161 @@ var app = function(d3, $) {
       width: width
     };
   }
+
+  function drawStackedAgeHistogram(data, isRedraw) {
+    var margin = {
+        top: 15,
+        left: 30,
+        bottom: 20,
+        right: 2
+      },
+      axisPadding = 0,
+      width = 1000,
+      barMargin = 1,
+      barWidth = 20,
+      height = 300;
+    var dataRows = [];
+    dataRows = data.filter(function(d) {
+      return d.Age !== null;
+    });
+    var survivalData = {};
+    survivalData.Survived = dataRows.filter(function(d) {
+      return d.Survived === 1;
+    });
+    survivalData.Perished = dataRows.filter(function(d) {
+      return d.Survived === 0;
+    });
+
+    var layeredData = [];
+    survivalLabels.forEach(function(group) {
+      layeredData.push({
+        name: group,
+        values : d3.range(maxAge + 1).map(function(age) {
+          return {
+            x: age,
+            y: d3.sum(survivalData[group], function(d) {
+                return d.Age >= age && d.Age < age + 1 ? 1 : 0;
+              })
+          };
+        })
+      });
+    });
+    console.log(layeredData);
+    var stack = d3.layout.stack().values(function(d) { return d.values; });
+    var stackedData = stack(layeredData);
+
+    var svg = isRedraw ? chartSvgs.stackedAgeHistogram.svg :
+      d3.select('div#stacked-age-chart')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append("g")
+      .attr({
+        transform: "translate(" + margin.left + "," + margin.top + ")",
+        class: 'main-group'
+      });
+
+    var xScale = isRedraw ? chartSvgs.stackedAgeHistogram.xScale : d3.scale.linear()
+      .domain([0, stackedData[0].values.length])
+      .range([0, width]);
+
+    var yScale = isRedraw ? chartSvgs.stackedAgeHistogram.yScale : d3.scale.linear()
+      .range([height, 0]);
+
+    yScale.domain([0, d3.max(stackedData[stackedData.length - 1].values, function(topStack) {
+      return topStack.y0 + topStack.y;
+    })]);
+
+     // Bar Groups
+    var barGroups = svg.selectAll("g.bar-group")
+      .data(stackedData, function(d) {
+        return d.name;
+      });
+    barGroups.enter()
+        .append("g")
+        .attr("class", function(d) {
+          return d.name + " bar-group";
+        });
+
+    // Bar Group Rects
+    var barGroupRects =
+      barGroups
+      .selectAll("rect.survival-per-age")
+      .data(function(d) {
+        return d.values;
+      }, function(d) {
+        return d.x;
+      });
+
+      barGroupRects
+        .enter()
+        .append("rect")
+        .attr({
+          class: "survival-per-age",
+          width: xScale(1) - xScale(0) - barMargin * 2
+        });
+
+      barGroupRects.attr("x", function(d) {
+        return xScale(d.x) + barMargin;
+      })
+      .attr("y", function(d) {
+        return yScale(d.y0) - (height - yScale(d.y));
+      })
+      .attr("height", function(d) {
+        return height - yScale(d.y);
+      });
+
+    // Axes
+    if (!isRedraw) {
+      var xAxis = d3.svg.axis()
+        .orient("bottom")
+        .ticks(16)
+        .scale(xScale);
+      svg.append("g")
+        .attr({
+          class: "x axis",
+          transform: "translate(" + axisPadding + ", " + height + ")"
+        })
+        .call(xAxis);
+    }
+
+    var yAxis = d3.svg.axis()
+      .scale(yScale)
+      .orient("left");
+    var yAxisGroup = isRedraw ? svg.select("g.y.axis") :
+      svg.append("g")
+      .attr({
+        class: "y axis",
+        transform: "translate(" + (-axisPadding) + ", 0)"
+      });
+    yAxisGroup.call(yAxis);
+    // Text
+    // var barGroupTexts = barGroups
+    //   .selectAll("text.bar.text")
+    //   .data(function(d) {
+    //     return d;
+    //   }, function(d) {
+    //     return d.x;
+    //   });
+    // if (!isRedraw) {
+    //   barGroupTexts
+    //     .enter()
+    //     .append('text')
+    //     .attr({
+    //       "class": "bar text",
+    //       'alignment-baseline': 'middle'
+    //     });
+    // }
+    chartSvgs.stackedAgeHistogram = {
+      svg: svg,
+      xScale: xScale,
+      yScale: yScale,
+      margin: margin,
+      height: height,
+      width: width
+    };
+  }
+
 
   function drawAgeHistogram(data, isRedraw) {
     var rowsWithAge = [],
@@ -975,6 +1133,7 @@ var app = function(d3, $) {
     drawSurvivalChart(survivalData);
     drawSurvivalStack(survivalData);
     drawAgeHistogram(data);
+    drawStackedAgeHistogram(data);
     drawSexStack(sexData);
     drawPclassChart(pclassData);
     performNarrativeAnimation(function() {
