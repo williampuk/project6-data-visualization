@@ -1024,7 +1024,6 @@ var app = function(d3, $) {
       d3.select("#selected-pclass-label")
         .selectAll("span")
         .data(pclass.sort(), function(d) {
-          console.log(d);
           return d;
         })
         .enter()
@@ -1050,13 +1049,13 @@ var app = function(d3, $) {
       timeout: 3000
     }, {
       id: "narrative-1",
-      timeout: 4000
-    }, {
-      id: "narrative-2",
       timeout: 5000
     }, {
+      id: "narrative-2",
+      timeout: 8000
+    }, {
       id: "narrative-3",
-      timeout: 4000
+      timeout: 5000
     }, {
       id: "narrative-4",
       timeout: 3000,
@@ -1070,14 +1069,14 @@ var app = function(d3, $) {
       }
     }, {
       id: "narrative-6",
-      timeout: 4000,
+      timeout: 3000,
       toAge: maxAge + 1
     }, {
       id: "narrative-7",
       timeout: 6000
     }, {
       id: "narrative-8",
-      timeout: 6000
+      timeout: 3000
     }, {
       id: "narrative-9",
       timeout: 3000,
@@ -1086,49 +1085,50 @@ var app = function(d3, $) {
       }
     }, {
       id: "narrative-10",
-      timeout: 5000,
+      timeout: 4000,
       before: function() {
         dataFilters.ageRange = [];
         redrawWithFilteredData();
       }
     }, {
       id: "narrative-11",
-      timeout: 8000,
+      timeout: 6000,
       sex: ["male"]
     }, {
       id: "narrative-12",
-      timeout: 5000,
+      timeout: 3000,
       sex: ["female"]
     }, {
       id: "narrative-13",
-      timeout: 5000,
+      timeout: 3000,
       sex: ["female"]
 
     }, {
       id: "narrative-14",
-      timeout: 5000,
+      timeout: 4000,
       before: function() {
         dataFilters.sex = [];
         redrawWithFilteredData();
       }
     }, {
       id: "narrative-15",
-      timeout: 8000,
+      timeout: 6000,
       pclass: [3]
     }, {
       id: "narrative-16",
-      timeout: 8000,
+      timeout: 6000,
       pclass: [2]
     }, {
       id: "narrative-17",
-      timeout: 5000,
+      timeout: 3000,
       pclass: [1]
     }, {
       id: "narrative-18",
-      timeout: 5000
+      timeout: 3000,
+      pclass: [1]
     }, {
       id: "narrative-19",
-      timeout: 5000,
+      timeout: 4000,
       before: function() {
         dataFilters.pclass = [];
         redrawWithFilteredData();
@@ -1240,7 +1240,7 @@ var app = function(d3, $) {
     drawStackedSexBarChart(data);
     drawStackedPclassBarChart(data);
     performNarrativeAnimation(function() {
-      initInteraction(true);
+      initInteraction();
     });
   }
 

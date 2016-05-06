@@ -1,19 +1,19 @@
 extends layout
 
 block content
-  h3 Data Viusalization of Titanic Dataset
-  p This data visualization shows how the survival rate relates to the age, sex and passenger class of a passenger.
+  h3 Data Viusalization of the dataset of Titantic the tragedy
+  p This data visualization shows how the survival rate relates to the age, sex and passenger class of Titantic passengers.
   div.container-fluid
     div#narrative-panel.panel.panel-primary.hidden
       div.panel-heading
         div.row
           div#narrative.col-md-12
             div#narrative-0
-              strong Hi ! Welcome to this data visualization of Titanic Data
+              strong Hi! Welcome to this data visualization.
             div#narrative-1
-              strong We first look at the relationship between the age range of passengers and the survival rate.
+              strong We will explore how the survival rate changes with age, sex and passenger class of passengers.
             div#narrative-2
-              strong The age information of #[span.rows-of-age-data] passengers (out of the total #[span.rows-of-dataset] passengers) are available in the dataset.
+              strong Let's first look at the age. The age information of #[span.rows-of-age-data] passengers (out of the total #[span.rows-of-dataset] passengers) are available in the dataset.
             div#narrative-3
               strong We will be able to see how survival rate changes with varying age range selection out of these #[span.rows-of-age-data] records.
             div#narrative-4
@@ -29,7 +29,7 @@ block content
             div#narrative-9
               strong We can see the overall trend is that, as the upper bound of the selection increases with age, survival rate decreases.
             div#narrative-10
-              strong Let's go back to the whole set of data. Next, we will see which sex group has the highest survival rate.
+              strong Let's go back to the whole set of data (of all #[span.rows-of-dataset] passengers). Next, we will see which sex group has the highest survival rate.
             div#narrative-11
               strong First, only the data of male passengers are selected.
             div#narrative-12
@@ -64,11 +64,11 @@ block content
       div.panel-body
         div.row
           div.col-md-2.col-sm-6 No. of samples:&nbsp;#[span.current-rows-of-dataset.selection-stats]
-          div.col-md-4.col-sm-6 Age Range:&nbsp;#[span.hidden.age-range #[span.lower-age.selection-stats] (inclusive) to #[span.upper-age.selection-stats] (exclusive)] #[span.age-not-restricted-label.selection-stats Not Restricted]
+          div.col-md-4.col-sm-6 Age Range:&nbsp;#[span.hidden.age-range #[span.lower-age.selection-stats] (inclusive) to #[span.upper-age.selection-stats] (exclusive)] #[span.age-not-restricted-label Not Restricted]
           div.col-md-3.col-sm-6 Sex:&nbsp;
-            span.selection-stats #[span.hidden.selected-sex-label #[span.selected-male-label Male] #[span.selected-female-label Female]] #[span.sex-not-restricted-label Not Restricted]
+            span #[span.hidden.selected-sex-label.selection-stats #[span.selected-male-label Male] #[span.selected-female-label Female]] #[span.sex-not-restricted-label Not Restricted]
           div.col-md-3.col-sm-6 Passenger Class:
-            span.selection-stats #[span#selected-pclass-label.hidden #[span.selected-lower-label Lower] #[span.selected-middle-label Middle] #[span.selected-upper-label Upper]] #[span.pclass-not-restricted-label Not Restricted]
+            span #[span#selected-pclass-label.hidden.selection-stats #[span.selected-lower-label Lower] #[span.selected-middle-label Middle] #[span.selected-upper-label Upper]] #[span.pclass-not-restricted-label Not Restricted]
     div(role="alert")#interaction-explain.alert.alert-success.hidden
       span You can interact with below charts and see how the survival rate shown above changes with your selection.
       button(type="button").close
@@ -85,13 +85,13 @@ block content
       div.col-md-12
         div.inline-block-align-top
           div
-            strong The ratio of the sex of passengers
+            strong A bar chart of the sex of passengers
             div.interaction-help-text.hidden
               div Click on the bar to do filtering
           div#stacked-sex-chart
         div.inline-block-align-top
           div
-            strong A bar chart of the passenger class of passengers
+            strong A bar chart of the passenger class (travel class) of passengers
             div.interaction-help-text.hidden
               div Click on the bar to do filtering
           div#stacked-pclass-chart
