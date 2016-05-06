@@ -51,21 +51,25 @@ block content
             div#narrative-20
               strong You can now freely use the brush or click on the class label to explore the data in different combination of selection. Thanks for watching.
 
+    div.row
+      div#survival-focus.col-md-12
+        div.header-text
+          h4 Survival statistics of Titanic passengers
+        div#survival.inline-block-align-top
+        div#survival-ratio.inline-block-align-top
     div#current-data-selection.panel.panel-default
       div.panel-heading
         div Current data selection
       div.panel-body
         div.row
-          div.col-md-2.col-sm-6 No. of samples: #[span.current-rows-of-dataset]
-          div.col-md-4.col-sm-6 Age Range: #[span.hidden.age-range #[span.lower-age] (inclusive) to #[span.upper-age] (exclusive)] #[span.age-not-restricted-label Not Restricted]
-          div.col-md-3.col-sm-6 Sex: #[span.hidden.selected-sex-label #[span.selected-male-label Male] #[span.selected-female-label Female]] #[span.sex-not-restricted-label Not Restricted]
-          div.col-md-3.col-sm-6 Passenger Class: #[span#selected-pclass-label.hidden #[span.selected-lower-label Lower] #[span.selected-middle-label Middle] #[span.selected-upper-label Upper]] #[span.pclass-not-restricted-label Not Restricted]
-    div.row
-      div#survival-focus.col-md-12
-        div.header-text
-          h4 A bar chart of survived and perished passengers
-        div#survival.inline-block-align-top
-        div#survival-ratio.inline-block-align-top
+          div.col-md-2.col-sm-6 No. of samples:&nbsp;
+            strong #[span.current-rows-of-dataset]
+          div.col-md-4.col-sm-6 Age Range:&nbsp;
+            strong #[span.hidden.age-range #[span.lower-age] (inclusive) to #[span.upper-age] (exclusive)] #[span.age-not-restricted-label Not Restricted]
+          div.col-md-3.col-sm-6 Sex:&nbsp;
+            strong #[span.hidden.selected-sex-label #[span.selected-male-label Male] #[span.selected-female-label Female]] #[span.sex-not-restricted-label Not Restricted]
+          div.col-md-3.col-sm-6 Passenger Class:
+            strong #[span#selected-pclass-label.hidden #[span.selected-lower-label Lower] #[span.selected-middle-label Middle] #[span.selected-upper-label Upper]] #[span.pclass-not-restricted-label Not Restricted]
     div.row
       div.col-md-12
         div

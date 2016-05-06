@@ -22,7 +22,8 @@ var app = function(d3, $) {
     sexChart: {},
     pclassChart: {},
     stackedAgeHistogram: {},
-    stackedSexBarChart: {}
+    stackedSexBarChart: {},
+    stackedPclassBarChart: {}
   };
 
   var dataFilters = {
@@ -314,7 +315,7 @@ var app = function(d3, $) {
       width = 1000,
       barMargin = 1,
       barWidth = 20,
-      height = 300;
+      height = 200;
     var dataRows = [];
     dataRows = data.filter(function(d) {
       return d.Age !== null;
@@ -457,7 +458,7 @@ var app = function(d3, $) {
     };
   }
 
-  function drawStackedSexBarCheck(data, isRedraw) {
+  function drawStackedSexBarChart(data, isRedraw) {
     var margin = {
       top: 5,
       left: 50,
@@ -466,7 +467,7 @@ var app = function(d3, $) {
     },
       width = 500,
       barHeight = 20,
-      height = 30;
+      height = 50;
     var survivalData = {};
     survivalData.Survived = data.filter(function (d) {
       return d.Survived === 1;
@@ -579,6 +580,138 @@ var app = function(d3, $) {
         .call(yAxis);
 
       chartSvgs.stackedSexBarChart = {
+        svg: svg,
+        xScale: xScale,
+        yScale: yScale,
+        margin: margin,
+        height: height,
+        width: width
+      };
+    }
+  }
+
+  function drawStackedPclassBarChart(data, isRedraw) {
+    var margin = {
+      top: 5,
+      left: 50,
+      bottom: 30,
+      right: 30
+    },
+      width = 500,
+      barHeight = 20,
+      height = 50;
+    var survivalData = {};
+    survivalData.Survived = data.filter(function (d) {
+      return d.Survived === 1;
+    });
+    survivalData.Perished = data.filter(function (d) {
+      return d.Survived === 0;
+    });
+    var layeredData = [];
+    survivalLabels.forEach(function (group) {
+      layeredData.push({
+        name: group,
+        values: Object.keys(pclassMap).map(function (pclass) {
+          return {
+            x: pclassMap[+pclass],
+            y: d3.sum(survivalData[group], function (d) {
+              return d.Pclass === +pclass ? 1 : 0;
+            })
+          };
+        })
+      });
+    });
+
+    var stack = d3.layout.stack().values(function (d) { return d.values; });
+    var stackedData = stack(layeredData);
+
+    var svg = isRedraw ? chartSvgs.stackedPclassBarChart.svg :
+      d3.select('div#stacked-pclass-chart')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append("g")
+        .attr({
+          transform: "translate(" + margin.left + "," + margin.top + ")",
+          class: 'main-group'
+        });
+
+    var xScale = isRedraw ? chartSvgs.stackedPclassBarChart.xScale : d3.scale.linear()
+      .range([0, width]);
+
+    xScale.domain([0, d3.max(stackedData[stackedData.length - 1].values, function (topStack) {
+      return topStack.y0 + topStack.y;
+    })]);
+
+    var yScale = isRedraw ? chartSvgs.stackedPclassBarChart.yScale : d3.scale.ordinal()
+      .domain(stackedData[0].values.map(function (d) { return d.x; }))
+      .rangeRoundBands([0, height], 0.2);
+
+    // Bar Groups
+    var barGroups = svg.selectAll("g.bar-group")
+      .data(stackedData, function (d) {
+        return d.name;
+      });
+    barGroups.enter()
+      .append("g")
+      .attr("class", function (d) {
+        return d.name + " bar-group";
+      });
+
+    // Bar Group Rects
+    var barGroupRects =
+      barGroups
+        .selectAll("rect.survival-per-pclass")
+        .data(function (d) {
+          return d.values;
+        }, function (d) {
+          return d.x;
+        });
+
+    barGroupRects
+      .enter()
+      .append("rect")
+      .attr({
+        class: "survival-per-pclass",
+        height: yScale.rangeBand()
+      });
+
+    barGroupRects
+      .attr("x", function (d) {
+        return xScale(d.y0);
+      })
+      .attr("width", function (d) {
+        return xScale(d.y);
+      })
+      .attr("y", function (d) {
+        return yScale(d.x);
+      });
+
+    // Axes
+
+    var xAxis = d3.svg.axis()
+      .orient("bottom")
+      .scale(xScale);
+    var xAxisGroup = isRedraw ? svg.select("g.x.axis") :
+      svg.append("g")
+        .attr({
+          class: "x axis",
+          transform: "translate(0, " + height + ")"
+        });
+    xAxisGroup.call(xAxis);
+
+    if (!isRedraw) {
+      var yAxis = d3.svg.axis()
+        .scale(yScale)
+        .orient("left");
+
+      svg.append("g")
+        .attr({
+          class: "y axis"
+        })
+        .call(yAxis);
+
+      chartSvgs.stackedPclassBarChart = {
         svg: svg,
         xScale: xScale,
         yScale: yScale,
@@ -975,7 +1108,7 @@ var app = function(d3, $) {
 
   function redrawWithFilteredDate(excludedCharts) {
     var data = filterData(fullData);
-    var dataPreservingAllAges = filterData(fullData, true)
+    var dataPreservingAllAges = filterData(fullData, true);
     var survivalData = getSurvivalCount(data);
     var sexData = getSexCount(data);
     var pclassData = getPclassCount(data);
@@ -1068,21 +1201,20 @@ var app = function(d3, $) {
     } else if ($.isArray(pclass)){
       d3.selectAll(".pclass-not-restricted-label").classed("hidden", true);
       d3.select("#selected-pclass-label").classed("hidden", false);
-      var pclassSpans = d3.select("#selected-pclass-label")
+      d3.select("#selected-pclass-label")
         .selectAll("span")
-        .data(pclass, function(d) {
+        .remove();
+      d3.select("#selected-pclass-label")
+        .selectAll("span")
+        .data(pclass.sort(), function(d) {
           console.log(d);
           return d;
-        });
-      pclassSpans
+        })
         .enter()
         .append("span")
         .html(function(d) {
           return pclassMap[d] + '<span class="comma">, </span>';
         });
-      pclassSpans
-        .exit()
-        .remove();
     }
   }
 
@@ -1268,7 +1400,8 @@ var app = function(d3, $) {
     drawSurvivalStack(survivalData);
     drawAgeHistogram(data);
     drawStackedAgeHistogram(data);
-    drawStackedSexBarCheck(data);
+    drawStackedSexBarChart(data);
+    drawStackedPclassBarChart(data);
     drawSexStack(sexData);
     drawPclassChart(pclassData);
     performNarrativeAnimation(function() {
