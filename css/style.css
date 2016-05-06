@@ -8,9 +8,29 @@ body {
   display:none;
 }
 
-#current-data-selection .panel-heading {
+.panel-heading, .alert {
   padding-top: 6px;
   padding-bottom: 7px;
+}
+
+.interaction-help-text {
+  padding-left: 10px;
+  font-size: 90%;
+}
+
+#interaction-explain.alert {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+#interaction-explain.alert button {
+  position: relative;
+  top: -2px;
+}
+
+#current-data-selection {
+  margin-bottom: 10px;
 }
 
 #current-data-selection .panel-heading button {
@@ -38,8 +58,8 @@ rect.clickable {
   stroke: #000;
 }
 
-.legend-text {
-
+.axis-label {
+  font-size: 80%;
 }
 
 /* Text Containers */

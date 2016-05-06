@@ -69,6 +69,10 @@ block content
             span.selection-stats #[span.hidden.selected-sex-label #[span.selected-male-label Male] #[span.selected-female-label Female]] #[span.sex-not-restricted-label Not Restricted]
           div.col-md-3.col-sm-6 Passenger Class:
             span.selection-stats #[span#selected-pclass-label.hidden #[span.selected-lower-label Lower] #[span.selected-middle-label Middle] #[span.selected-upper-label Upper]] #[span.pclass-not-restricted-label Not Restricted]
+    div(role="alert")#interaction-explain.alert.alert-success.hidden
+      span You can interact with below charts and see how the survival rate shown above changes with your selection.
+      button(type="button").close
+        span &times;
     div.row
       div.col-md-12
         div
@@ -82,10 +86,14 @@ block content
         div.inline-block-align-top
           div
             strong The ratio of the sex of passengers
+            div.interaction-help-text.hidden
+              div Click on the bar to do filtering
           div#stacked-sex-chart
         div.inline-block-align-top
           div
             strong A bar chart of the passenger class of passengers
+            div.interaction-help-text.hidden
+              div Click on the bar to do filtering
           div#stacked-pclass-chart
 
   script(src='js/babel-polyfill/polyfill.min.js')
