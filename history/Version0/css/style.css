@@ -1,0 +1,89 @@
+body {
+  padding: 0 50px;
+}
+
+/* Chart Colors */
+.survived.bar-group {
+  fill: #33a02c;
+}
+
+.perished.bar-group {
+  fill: #e31a1c;
+}
+
+#age-chart .age.bar-group {
+  fill: #6a3d9a;
+}
+
+#age-chart .age.bar-group rect.dimmed {
+  opacity: .2;
+}
+
+#age-chart .brush rect {
+  fill: #000;
+  opacity: .125;
+}
+
+.male.bar-group {
+  fill: #1f78b4;
+  opacity: .7;
+}
+
+.female.bar-group {
+  fill: #fb9a99;
+}
+
+#pclass-chart .bar-group rect {
+  fill: #ffff99;
+  stroke: #000;
+}
+
+#pclass-chart .bar.text {
+  color: black;
+  text-shadow: none;
+  font-size: 90%;
+}
+/* Axes */
+
+.axis {
+  font-size: 75%;
+}
+
+div.inline-block-align-top {
+  display: inline-block;
+  vertical-align: top;
+}
+
+#survival .y.axis path {
+  display: none;
+}
+
+#survival .x.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#survival .x.axis line {
+  shape-rendering: crispEdges;
+  stroke: #000;
+}
+
+#age-chart .x.axis path, #age-chart .y.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#age-chart .x.axis line, #age-chart .y.axis line {
+  shape-rendering: crispEdges;
+  stroke: #000;
+}
+
+#pclass-chart .x.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#pclass-chart .x.axis line {
+  shape-rendering: crispEdges;
+  stroke: #000;
+}

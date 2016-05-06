@@ -1,0 +1,147 @@
+/* common */
+
+body {
+  padding: 0 50px;
+}
+
+#narrative > div {
+  display:none;
+}
+
+#current-data-selection .panel-heading, #current-data-selection .panel-body {
+  padding-top : 5px;
+  padding-bottom: 5px;
+}
+
+.selection-stats {
+  font-weight: bold;
+  font-size: 110%;
+}
+
+rect.clickable {
+  cursor: pointer;
+}
+
+/* Text Containers */
+#survival-focus-title {
+  padding-left: 10px;
+}
+
+/* Chart Colors */
+rect.dimmed {
+  opacity: .2;
+}
+
+.survived.bar-group {
+  fill: #33a02c;
+}
+
+.perished.bar-group {
+  fill: #e31a1c;
+}
+
+#age-chart .age.bar-group {
+  fill: #6a3d9a;
+}
+
+#age-chart .age.bar-group rect.dimmed {
+  opacity: .2;
+}
+
+.brush rect {
+  fill: #000;
+  opacity: .125;
+}
+
+.male.bar-group {
+  fill: #1f78b4;
+  opacity: .7;
+}
+
+.female.bar-group {
+  fill: #fb9a99;
+}
+
+#pclass-chart .bar-group rect {
+  fill: #ffff99;
+  stroke: #000;
+}
+
+#pclass-chart .bar.text {
+  color: black;
+  text-shadow: none;
+  font-size: 90%;
+}
+/* Axes */
+
+.axis {
+  font-size: 75%;
+}
+
+div.inline-block-align-top {
+  display: inline-block;
+  vertical-align: top;
+}
+
+#survival .y.axis path {
+  display: none;
+}
+
+#survival .x.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#survival .x.axis line {
+  stroke: #000;
+}
+
+#stacked-age-chart .x.axis path, #stacked-age-chart .y.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#stacked-age-chart .x.axis line, #stacked-age-chart .y.axis line {
+  stroke: #000;
+}
+
+#age-chart .x.axis path, #age-chart .y.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#age-chart .x.axis line, #age-chart .y.axis line {
+  stroke: #000;
+}
+
+#stacked-sex-chart .x.axis path, #stacked-sex-chart  .y.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#stacked-sex-chart  .x.axis line, #stacked-sex-chart  .y.axis line {
+  stroke: #000;
+}
+
+#stacked-pclass-chart .x.axis path, #stacked-pclass-chart  .y.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#stacked-pclass-chart  .x.axis line, #stacked-pclass-chart  .y.axis line {
+  stroke: #000;
+}
+
+#pclass-chart .x.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+#pclass-chart .x.axis line {
+  stroke: #000;
+}
+
+/* comma */
+#selected-pclass-label span:last-of-type span.comma {
+  display: none;
+}

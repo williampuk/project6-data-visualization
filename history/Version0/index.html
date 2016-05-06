@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Data Visualization of Titanic Data</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+
+<body>
+    <h1>Data Viusalization of Titanic Dataset</h1>
+    <p>This data visualization shows how the survival rate relates to the age, sex and passenger class of a passenger.</p>
+    <div class="container-fluid">
+        <div class="row">
+            <div id="survival-focus" class="col-md-12">
+                <div class="header-text">
+                    <h4>A bar chart of survived and perished passengers</h4></div>
+                <div id="survival" class="inline-block-align-top"></div>
+                <div id="survival-ratio" class="inline-block-align-top"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div>
+                    <h4>A histogram of the distribution of ages of the passengers</h4>
+                    <div>Select an area on the histogram to filter the data and see the effect.</div>
+                    <div>(Note: Once the data is filtered by an age range, the data will not include all the passenger whose ages are unknown in the source data.)</div>
+                </div>
+                <div id="age-chart"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="inline-block-align-top">
+                    <div>
+                        <h4>The ratio of the sex of passengers</h4></div>
+                    <div id="sex-chart"></div>
+                </div>
+                <div class="inline-block-align-top">
+                    <div>
+                        <h4>A bar chart of the passenger class of passengers</h4></div>
+                    <div id="pclass-chart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/babel-polyfill/polyfill.min.js"></script>
+    <script src="js/jquery/jquery.js"></script>
+    <script src="js/d3/d3.js"></script>
+    <script src="js/webapp.js"></script>
+</body>
+
+</html>

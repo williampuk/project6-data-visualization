@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Data Visualization of Titanic Data</title>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+</head>
+
+<body>
+    <h2>Data Viusalization of Titanic Dataset</h2>
+    <p>This data visualization shows how the survival rate relates to the age, sex and passenger class of a passenger.</p>
+    <div class="container-fluid">
+        <div id="narrative-panel" class="panel panel-info hidden">
+            <div class="panel-heading">
+                <div class="row">
+                    <div id="narrative" class="col-md-12">
+                        <div id="narrative-0"><strong>Hi! Welcome to this data visualization of Titanic Data</strong></div>
+                        <div id="narrative-1"><strong>We first look at the relationship between the age range of passengers and the survival rate.</strong></div>
+                        <div id="narrative-2"><strong>The age information of <span class="rows-of-age-data"></span> passengers (out of the total <span class="rows-of-dataset"></span> passengers) are available in the dataset.</strong></div>
+                        <div id="narrative-3"><strong>We will be able to see how survival rate changes with varying age range selection out of these <span class="rows-of-age-data"></span> records.</strong></div>
+                        <div id="narrative-4"><strong>The selection first starts with 0, and gradually increases up to the maximum recorded age.</strong></div>
+                        <div id="narrative-5"><strong>We can see the survival age of passengers below 10 is pretty high. It is always above 60%.</strong></div>
+                        <div id="narrative-6"><strong>The selection now slowly increases up to the maximum age. Notice how the survival rate changes with the expanding selection.</strong></div>
+                        <div id="narrative-7"><strong>Since the selection includes age 10 onwards, the survival rate has never been more than 60%.</strong></div>
+                        <div id="narrative-8"><strong>We can see the overall trend is that, as the upper bound of the selection increases with age, survival rate decreases.</strong></div>
+                        <div id="narrative-9"><strong>We can see the overall trend is that, as the upper bound of the selection increases with age, survival rate decreases.</strong></div>
+                        <div id="narrative-10"><strong>Let's go back to the whole set of data. Next, we will see which sex group has the highest survival rate.</strong></div>
+                        <div id="narrative-11"><strong>First, only the data of male passengers are selected.</strong></div>
+                        <div id="narrative-12"><strong>Then, only the data of female passengers are selected.</strong></div>
+                        <div id="narrative-13"><strong>It is obvious that the survival rate of female passengers is much higher than that of male passengers.</strong></div>
+                        <div id="narrative-14"><strong>Finally, we are going to explore which passenger class has the highest survival rate.</strong></div>
+                        <div id="narrative-15"><strong>First, only the data of passengers in lower class are selected.</strong></div>
+                        <div id="narrative-16"><strong>Then, only the data of passengers in middle class are selected.</strong></div>
+                        <div id="narrative-17"><strong>Lastly, only the data of passengers in upper class are selected.</strong></div>
+                        <div id="narrative-18"><strong>It is obvious that the survival rate of passengers in upper class is much higher than those of other 2 classes.</strong></div>
+                        <div id="narrative-19"><strong>We have finished watching the visualization of how survival rate changes with each of the three passengers' attributes.</strong></div>
+                        <div id="narrative-20"><strong>You can now freely use the brush or click on the class label to explore the data in different combination of selection. Thanks for watching.</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="well well-sm">
+            <div id="survival-focus">
+                <div id="survival-focus-title">
+                    <h4>Survival statistics of the selected group of passengers</h4></div>
+                <div id="survival" class="inline-block-align-top"></div>
+                <div id="survival-ratio" class="inline-block-align-top"></div>
+            </div>
+        </div>
+        <div id="current-data-selection" class="panel panel-info">
+            <div class="panel-heading"> <strong>Current data selection</strong></div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-2 col-sm-6">No. of samples:&nbsp;<span class="current-rows-of-dataset selection-stats"></span></div>
+                    <div class="col-md-4 col-sm-6">Age Range:&nbsp;<span class="hidden age-range"><span class="lower-age selection-stats"></span> (inclusive) to <span class="upper-age selection-stats"></span> (exclusive)</span> <span class="age-not-restricted-label selection-stats">Not Restricted</span></div>
+                    <div
+                        class="col-md-3 col-sm-6">Sex:&nbsp;<span class="selection-stats"><span class="hidden selected-sex-label"><span class="selected-male-label">Male</span> <span class="selected-female-label">Female</span></span> <span class="sex-not-restricted-label">Not Restricted</span></span>
+                </div>
+                <div class="col-md-3 col-sm-6">Passenger Class:<span class="selection-stats"><span id="selected-pclass-label" class="hidden"><span class="selected-lower-label">Lower</span> <span class="selected-middle-label">Middle</span> <span class="selected-upper-label">Upper</span></span>
+                    <span class="pclass-not-restricted-label">Not Restricted</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div><strong>A histogram of the distribution of ages of the passengers</strong>
+                <div id="brush-help-text" class="hidden">
+                    <div>Select an area on the histogram to filter the data and see the effect.</div>
+                    <div>(Note: Once the data is filtered by an age range, the data will not include all the passenger whose ages are unknown in the source data.)</div>
+                </div>
+            </div>
+            <div id="stacked-age-chart"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="inline-block-align-top">
+                <div><strong>The ratio of the sex of passengers</strong></div>
+                <div id="stacked-sex-chart"></div>
+            </div>
+            <div class="inline-block-align-top">
+                <div><strong>A bar chart of the passenger class of passengers</strong></div>
+                <div id="stacked-pclass-chart"></div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="js/babel-polyfill/polyfill.min.js"></script>
+    <script src="js/jquery/jquery.js"></script>
+    <script src="js/d3/d3.js"></script>
+    <script src="js/webapp.js"></script>
+</body>
+
+</html>
