@@ -1,5 +1,4 @@
-/* common */
-
+/* Elements */
 body {
   padding: 0 50px;
 }
@@ -84,19 +83,12 @@ rect.dimmed {
 }
 
 .survived.bar-group, rect.survived {
-  fill: #33a02c;
+  fill: #4daf4a;
 }
 
 .perished.bar-group, rect.perished{
-  fill: #e31a1c;
-}
-
-#age-chart .age.bar-group {
-  fill: #6a3d9a;
-}
-
-#age-chart .age.bar-group rect.dimmed {
-  opacity: .2;
+  fill: #e41a1c;
+  opacity: .75;
 }
 
 .brush rect {
@@ -104,27 +96,7 @@ rect.dimmed {
   opacity: .125;
 }
 
-.male.bar-group {
-  fill: #1f78b4;
-  opacity: .7;
-}
-
-.female.bar-group {
-  fill: #fb9a99;
-}
-
-#pclass-chart .bar-group rect {
-  fill: #ffff99;
-  stroke: #000;
-}
-
-#pclass-chart .bar.text {
-  color: black;
-  text-shadow: none;
-  font-size: 90%;
-}
 /* Axes */
-
 .axis {
   font-size: 75%;
 }
@@ -156,15 +128,6 @@ div.inline-block-align-top {
   stroke: #000;
 }
 
-#age-chart .x.axis path, #age-chart .y.axis path {
-  fill: none;
-  stroke: #000;
-}
-
-#age-chart .x.axis line, #age-chart .y.axis line {
-  stroke: #000;
-}
-
 #stacked-sex-chart .x.axis path, #stacked-sex-chart  .y.axis path {
   fill: none;
   stroke: #000;
@@ -180,15 +143,6 @@ div.inline-block-align-top {
 }
 
 #stacked-pclass-chart  .x.axis line, #stacked-pclass-chart  .y.axis line {
-  stroke: #000;
-}
-
-#pclass-chart .x.axis path {
-  fill: none;
-  stroke: #000;
-}
-
-#pclass-chart .x.axis line {
   stroke: #000;
 }
 
