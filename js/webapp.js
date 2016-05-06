@@ -324,7 +324,7 @@ var app = function(d3, $) {
       width = 1100,
       barMargin = 1,
       barWidth = 20,
-      height = 160;
+      height = 150;
     var dataRows = [];
     dataRows = data.filter(function(d) {
       return d.Age !== null;
@@ -488,9 +488,9 @@ var app = function(d3, $) {
       bottom: 30,
       right: 30
     },
-      width = 500,
+      width = 450,
       barHeight = 20,
-      height = 50;
+      height = 40;
     var survivalData = {};
     survivalData.Survived = data.filter(function (d) {
       return d.Survived === 1;
@@ -647,9 +647,9 @@ var app = function(d3, $) {
       bottom: 30,
       right: 30
     },
-      width = 500,
+      width = 450,
       barHeight = 20,
-      height = 80;
+      height = 60;
     var survivalData = {};
     survivalData.Survived = data.filter(function (d) {
       return d.Survived === 1;
@@ -1019,7 +1019,6 @@ var app = function(d3, $) {
       timeout: 5000,
       before: function() {
         dataFilters.ageRange = [];
-        dimUnselectedAgeRange(dataFilters.ageRange);
         redrawWithFilteredData();
       }
     }, {
@@ -1068,7 +1067,7 @@ var app = function(d3, $) {
       id: "narrative-20",
       timeout: 5000
     }];
-    ageNarrative = [];
+    // ageNarrative = [];
     var currCount = 0;
     var waitFor = {};
 
@@ -1101,13 +1100,11 @@ var app = function(d3, $) {
         waitFor.ageAnimateEnd = false;
         if ($.isEmptyObject(dataFilters.ageRange)) {
           dataFilters.ageRange = [0, 1];
-          dimUnselectedAgeRange(dataFilters.ageRange);
           redrawWithFilteredData();
         }
         var currAgeUpperLimit = dataFilters.ageRange[1];
         var increaseAgeInterval = setInterval(function() {
           dataFilters.ageRange[1] += 1;
-          dimUnselectedAgeRange(dataFilters.ageRange);
           redrawWithFilteredData();
 
           if (dataFilters.ageRange[1] >= currNarrative.toAge) {

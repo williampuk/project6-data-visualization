@@ -58,8 +58,8 @@ block content
         div#survival.inline-block-align-top
         div#survival-ratio.inline-block-align-top
     div#current-data-selection.panel.panel-info
-      div.panel-heading
-        div Current data selection
+      div.panel-heading 
+        strong Current data selection
       div.panel-body
         div.row
           div.col-md-2.col-sm-6 No. of samples:&nbsp;#[span.current-rows-of-dataset.selection-stats]
@@ -71,7 +71,7 @@ block content
     div.row
       div.col-md-12
         div
-          h4 A histogram of the distribution of ages of the passengers
+          strong A histogram of the distribution of ages of the passengers
           div#brush-help-text.hidden
             div Select an area on the histogram to filter the data and see the effect.
             div (Note: Once the data is filtered by an age range, the data will not include all the passenger whose ages are unknown in the source data.)
@@ -80,11 +80,11 @@ block content
       div.col-md-12
         div.inline-block-align-top
           div
-            h4 The ratio of the sex of passengers
+            strong The ratio of the sex of passengers
           div#stacked-sex-chart
         div.inline-block-align-top
           div
-            h4 A bar chart of the passenger class of passengers
+            strong A bar chart of the passenger class of passengers
           div#stacked-pclass-chart
 
   script(src='js/babel-polyfill/polyfill.min.js')
