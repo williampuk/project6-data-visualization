@@ -1,5 +1,4 @@
-/* common */
-
+/* Elements */
 body {
   padding: 0 50px;
 }
@@ -8,7 +7,42 @@ body {
   display:none;
 }
 
-#current-data-selection .panel-heading, #current-data-selection .panel-body {
+.well {
+  margin-bottom: 10px;
+}
+
+.panel-heading, .alert {
+  padding-top: 6px;
+  padding-bottom: 7px;
+}
+
+.interaction-help-text {
+  padding-left: 10px;
+  font-size: 90%;
+}
+
+#interaction-explain.alert {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+#interaction-explain.alert button {
+  position: relative;
+  top: -2px;
+}
+
+.panel {
+  margin-bottom: 10px;
+}
+
+#current-data-selection .panel-heading button {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  background: white;
+}
+
+#current-data-selection .panel-body {
   padding-top : 5px;
   padding-bottom: 5px;
 }
@@ -22,9 +56,25 @@ rect.clickable {
   cursor: pointer;
 }
 
+.legend-box {
+  fill: none;
+  stroke: #000;
+}
+
+.axis-label {
+  font-size: 80%;
+}
+
 /* Text Containers */
 #survival-focus-title {
-  padding-left: 10px;
+  padding: 5px 10px;
+  padding-top: 2px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.interaction-help-text {
+  font-size: 90%;
 }
 
 /* Chart Colors */
@@ -32,20 +82,13 @@ rect.dimmed {
   opacity: .2;
 }
 
-.survived.bar-group {
-  fill: #33a02c;
+.survived.bar-group, rect.survived {
+  fill: #4daf4a;
 }
 
-.perished.bar-group {
-  fill: #e31a1c;
-}
-
-#age-chart .age.bar-group {
-  fill: #6a3d9a;
-}
-
-#age-chart .age.bar-group rect.dimmed {
-  opacity: .2;
+.perished.bar-group, rect.perished{
+  fill: #e41a1c;
+  opacity: .75;
 }
 
 .brush rect {
@@ -53,27 +96,7 @@ rect.dimmed {
   opacity: .125;
 }
 
-.male.bar-group {
-  fill: #1f78b4;
-  opacity: .7;
-}
-
-.female.bar-group {
-  fill: #fb9a99;
-}
-
-#pclass-chart .bar-group rect {
-  fill: #ffff99;
-  stroke: #000;
-}
-
-#pclass-chart .bar.text {
-  color: black;
-  text-shadow: none;
-  font-size: 90%;
-}
 /* Axes */
-
 .axis {
   font-size: 75%;
 }
@@ -105,15 +128,6 @@ div.inline-block-align-top {
   stroke: #000;
 }
 
-#age-chart .x.axis path, #age-chart .y.axis path {
-  fill: none;
-  stroke: #000;
-}
-
-#age-chart .x.axis line, #age-chart .y.axis line {
-  stroke: #000;
-}
-
 #stacked-sex-chart .x.axis path, #stacked-sex-chart  .y.axis path {
   fill: none;
   stroke: #000;
@@ -129,15 +143,6 @@ div.inline-block-align-top {
 }
 
 #stacked-pclass-chart  .x.axis line, #stacked-pclass-chart  .y.axis line {
-  stroke: #000;
-}
-
-#pclass-chart .x.axis path {
-  fill: none;
-  stroke: #000;
-}
-
-#pclass-chart .x.axis line {
   stroke: #000;
 }
 
