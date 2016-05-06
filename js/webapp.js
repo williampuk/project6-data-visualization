@@ -1,9 +1,14 @@
-var app = function(d3, $) {
+var app = function (d3, $) {
   "use strict";
 
+  /*
+    Common variables and constants
+  */
   var fullData, maxAge, minAge;
 
-  var isSexLabelClickable = false, isPclassLabelClickable = false;
+  var isSexBarsClickable = false,
+    isPclassBarsClickable = false,
+    interactionInitialized = false;
 
   var survivalLabels = ["Survived", "Perished"];
 
@@ -32,37 +37,41 @@ var app = function(d3, $) {
     pclass: []
   };
 
+  /*
+    Common calculation functions
+  */
+
   function getSurvivalCount(data) {
-    var survived = d3.sum(data, function(d) {
+    var survived = d3.sum(data, function (d) {
       return d.Survived;
     });
     return [{
       category: "Survived",
       count: survived
     }, {
-      category: "Perished",
-      count: data.length - survived
-    }];
+        category: "Perished",
+        count: data.length - survived
+      }];
   }
 
   function getSexCount(data) {
-    var male = d3.sum(data, function(d) {
+    var male = d3.sum(data, function (d) {
       return +(d.Sex === "male");
     });
     return [{
       category: "Male",
       count: male
     }, {
-      category: "Female",
-      count: data.length - male
-    }];
+        category: "Female",
+        count: data.length - male
+      }];
   }
 
   function getPclassCount(data) {
     var upper = 0,
       middle = 0,
       lower = 0;
-    data.forEach(function(d) {
+    data.forEach(function (d) {
       if (d.Pclass === 1) {
         upper++;
       } else if (d.Pclass === 2) {
@@ -75,90 +84,104 @@ var app = function(d3, $) {
       category: "Lower",
       count: lower
     }, {
-      category: "Middle",
-      count: middle
-    }, {
-      category: "Upper",
-      count: upper
-    }];
+        category: "Middle",
+        count: middle
+      }, {
+        category: "Upper",
+        count: upper
+      }];
   }
 
+  /**
+   * Draw the survival chart
+   * - isRedraw flag to minimize opeartions in very redraw
+   */
   function drawSurvivalChart(survivalData, isRedraw) {
+
+    // Chart Properties
     var margin = {
-        top: 0,
-        left: 50,
-        bottom: 10,
-        right: 35
-      },
+      top: 0,
+      left: 50,
+      bottom: 32,
+      right: 35
+    },
       width = 800,
       height = 60;
+
+    // Main SVG group
     var svg = isRedraw ?
       chartSvgs.survivalChart.svg :
       d3.select("div#survival")
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom * 2)
-      .append("g")
-      .attr({
-        transform: "translate(" + margin.left + "," +
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr({
+          transform: "translate(" + margin.left + "," +
           margin.top + ")",
-        class: 'main-group'
-      });
-    // Scales
+          class: 'main-group'
+        });
+
+    // Build the  Scales
     // xScale and yScale stays the same on purpose in every redraw
     var xScale = isRedraw ? chartSvgs.survivalChart.xScale : d3.scale
       .linear()
-      .domain([0, d3.max(survivalData, function(d) {
+      .domain([0, d3.max(survivalData, function (d) {
         return d.count;
       })])
       .range([0, width]);
+
     var yScale = isRedraw ? chartSvgs.survivalChart.yScale : d3.scale.ordinal()
-      .domain(survivalData.map(function(d) {
+      .domain(survivalData.map(function (d) {
         return d.category;
       }))
       .rangeRoundBands([0, height], 0.2);
-    // Bar Groups
+
+    // Bar Groups - one group per survival result
     var barGroups = svg.selectAll("g.bar-group")
-      .data(survivalData, function(d) {
+      .data(survivalData, function (d) {
         return d.category;
       });
-    if (!isRedraw) {
-      barGroups = barGroups
-        .enter()
-        .append("g")
-        .attr("class", function(d) {
-          return d.category.toLowerCase() + " bar-group";
-        });
-    }
-    barGroups.attr("transform", function(d) {
+    barGroups
+      .enter()
+      .append("g")
+      .attr("class", function (d) {
+        return d.category.toLowerCase() + " bar-group";
+      });
+    barGroups.attr("transform", function (d) {
       return "translate(" + 0 + "," + yScale(d.category) + ")";
     });
-    // Rect
+
+    // Draw the rect in every bar group
     var barGroupsRect = isRedraw ? barGroups.select("rect.survival-data") :
       barGroups
-      .append("rect")
-      .attr("class", "survival-data")
-      .attr("height", function(d) {
-        return yScale.rangeBand();
-      });
+        .append("rect")
+        .attr("class", "survival-data")
+        .attr("height", function (d) {
+          return yScale.rangeBand();
+        });
     barGroupsRect
-      .attr("width", function(d) {
+      .attr("width", function (d) {
         return xScale(d.count);
       });
-    // Text
+
+    // Draw the text to show the count
     var barGroupsText = isRedraw ? barGroups.select("text.bar.text") :
       barGroups.append('text').attr({
         "class": "bar text",
         'alignment-baseline': 'middle'
       });
-    barGroupsText.text(function(d) {
+    barGroupsText.text(function (d) {
         return d.count;
       })
-      .attr("transform", function(d) {
+      .attr("transform", function (d) {
         return "translate(" + (xScale(d.count) + 5) + ", " + (yScale.rangeBand() / 2) + ")";
       });
-    // Axes
+
+    // Draw Axes
     if (!isRedraw) {
+
+      // x axis
       var xAxis = d3.svg.axis()
         .orient('bottom')
         .scale(xScale)
@@ -171,6 +194,7 @@ var app = function(d3, $) {
         .attr("class", "x axis")
         .call(xAxis);
 
+      // y axis
       var yAxis = d3.svg.axis()
         .orient('left')
         .scale(yScale);
@@ -178,43 +202,61 @@ var app = function(d3, $) {
       svg.append('g')
         .attr("class", "y axis")
         .call(yAxis);
+
+      // x axis label
+      svg.append('g')
+        .attr({
+          class: "x axis-label",
+          transform: "translate(" + (width / 2 - 30) + ", " + (height + 30) + ")"
+        })
+        .append('text')
+        .text('Count');
     }
 
-    chartSvgs.survivalChart = {
-      svg: svg,
-      xScale: xScale,
-      yScale: yScale,
-      margin: margin,
-      height: height,
-      width: width
-    };
+    // Store the object
+    chartSvgs.survivalChart.svg = svg;
+    chartSvgs.survivalChart.xScale = xScale;
+    chartSvgs.survivalChart.yScale = yScale;
+    chartSvgs.survivalChart.margin = margin;
+    chartSvgs.survivalChart.height = height;
+    chartSvgs.survivalChart.width = width;
   }
 
+  /**
+   *  Draw the survival percentage bar
+   */
   function drawSurvivalStack(survivalData, isRedraw) {
+
+    // Chart Properties
     var margin = {
-        top: 8,
-        left: 20,
-        bottom: 8,
-        right: 2
-      },
+      top: 8,
+      left: 20,
+      bottom: 8,
+      right: 2
+    },
       axisPadding = 0,
       width = 80,
       barWidth = 20,
-      height = 60;
-    var totalCount = d3.sum(survivalData, function(d) {
+      height = 70;
+
+    // Calculate total count
+    var totalCount = d3.sum(survivalData, function (d) {
       return d.count;
     });
     if (totalCount <= 0) {
       // It should not draw this graph if both counts are zero's.
       return;
     }
+
     // Layered Data
-    var layer = d3.layout.stack()(survivalData.map(function(d) {
+    var layer = d3.layout.stack()(survivalData.map(function (d) {
       return [{
         x: d.category,
         y: d.count
       }];
     }));
+
+    // Main SVG group
     var svg = isRedraw ? chartSvgs.survivalStack.svg : d3.select("div#survival-ratio")
       .append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -222,58 +264,58 @@ var app = function(d3, $) {
       .append("g")
       .attr({
         transform: "translate(" + margin.left + "," +
-          margin.top + ")",
+        margin.top + ")",
         class: 'main-group'
       });
-    // Scale
+
+    // Build the y scale
     var yScale = isRedraw ? chartSvgs.survivalStack.yScale : d3.scale.linear()
       .range([0, height]);
-    yScale.domain([0, d3.max(layer, function(layer) {
+    yScale.domain([0, d3.max(layer, function (layer) {
       return layer[0].y0 + layer[0].y;
     })]);
+
     // Bar Groups
     var barGroups = svg.selectAll("g.bar-group")
-      .data(layer, function(d, i) {
+      .data(layer, function (d, i) {
         return i;
       });
-    if (!isRedraw) {
-      barGroups.enter()
-        .append("g")
-        .attr("class", function(d) {
-          return d[0].x.toLowerCase() + " bar-group";
-        });
-    }
-    // Bar Group Rects
+    barGroups.enter()
+      .append("g")
+      .attr("class", function (d) {
+        return d[0].x.toLowerCase() + " bar-group";
+      });
+
+    // Draw the Rects to each bar group
     var barGroupRects =
       barGroups
-      .selectAll("rect.survival-data")
-      .data(function(d) {
-        return d;
-      }, function(d) {
-        return d.x;
-      });
-    if (!isRedraw) {
-      barGroupRects
-        .enter()
-        .append("rect")
-        .attr({
-          class: "survival-data",
-          x: 0,
-          width: barWidth
+        .selectAll("rect.survival-data")
+        .data(function (d) {
+          return d;
+        }, function (d) {
+          return d.x;
         });
-    }
-    barGroupRects.attr("y", function(d, i) {
-        return yScale(d.y0);
-      })
-      .attr("height", function(d) {
-        return yScale(d.y);
+    barGroupRects
+      .enter()
+      .append("rect")
+      .attr({
+        class: "survival-data",
+        x: 0,
+        width: barWidth
       });
-    // Text
+    barGroupRects.attr("y", function (d, i) {
+      return yScale(d.y0);
+    })
+    .attr("height", function (d) {
+      return yScale(d.y);
+    });
+
+    // Draw the text to show the percentage
     var barGroupTexts = barGroups
       .selectAll("text.bar.text")
-      .data(function(d) {
+      .data(function (d) {
         return d;
-      }, function(d) {
+      }, function (d) {
         return d.x;
       });
     if (!isRedraw) {
@@ -285,87 +327,87 @@ var app = function(d3, $) {
           'alignment-baseline': 'middle'
         });
     }
-    barGroupTexts.text(function(d) {
-        return Math.round(survivalData.find(function(sd) {
-          return sd.category === d.x;
-        }).count / totalCount * 1000) / 10 + "%";
-      })
-      .attr("transform", function(d) {
-        return "translate(" + (barWidth + 5) + ", " + (yScale(d.y0) + yScale(d.y) / 2) + ")";
-      });
+    barGroupTexts.text(function (d) {
+      return Math.round(survivalData.find(function (sd) {
+        return sd.category === d.x;
+      }).count / totalCount * 1000) / 10 + "%";
+    })
+    .attr("transform", function (d) {
+      return "translate(" + (barWidth + 5) + ", " + (yScale(d.y0) + yScale(d.y) / 2) + ")";
+    });
 
-    chartSvgs.survivalStack = {
-      svg: svg,
-      xScale: null,
-      yScale: yScale,
-      margin: margin,
-      height: height,
-      width: width
-    };
+    // Store the object for later use
+    chartSvgs.survivalStack.svg = svg;
+    chartSvgs.survivalStack.xScale = null;
+    chartSvgs.survivalStack.yScale = yScale;
+    chartSvgs.survivalStack.margin = margin;
+    chartSvgs.survivalStack.height = height;
+    chartSvgs.survivalStack.width = width;
   }
 
-  /*
-   █████   ██████  ███████
-  ██   ██ ██       ██
-  ███████ ██   ███ █████
-  ██   ██ ██    ██ ██
-  ██   ██  ██████  ███████
-  */
-
-
+  /**
+   * Draw the stacked age histogram
+   */
   function drawStackedAgeHistogram(data, isRedraw) {
+
+    // Chart Properties
     var margin = {
-        top: 15,
-        left: 30,
-        bottom: 20,
-        right: 2
-      },
-      axisPadding = 0,
-      width = 1100,
-      barMargin = 1,
-      barWidth = 20,
-      height = 150;
+      top: 15,
+      left: 35,
+      bottom: 40,
+      right: 90
+    },
+    axisPadding = 0,
+    width = 1000,
+    barMargin = 1,
+    barWidth = 20,
+    height = 130;
+
+    // Prepare the data for the d3 stack function
     var dataRows = [];
-    dataRows = data.filter(function(d) {
+    dataRows = data.filter(function (d) {
       return d.Age !== null;
     });
     var survivalData = {};
-    survivalData.Survived = dataRows.filter(function(d) {
+    survivalData.Survived = dataRows.filter(function (d) {
       return d.Survived === 1;
     });
-    survivalData.Perished = dataRows.filter(function(d) {
+    survivalData.Perished = dataRows.filter(function (d) {
       return d.Survived === 0;
     });
 
     var layeredData = [];
-    survivalLabels.forEach(function(group) {
+    survivalLabels.forEach(function (group) {
       layeredData.push({
         name: group,
-        values : d3.range(maxAge + 1).map(function(age) {
+        values: d3.range(maxAge + 1).map(function (age) {
           return {
             x: age,
-            y: d3.sum(survivalData[group], function(d) {
-                return d.Age >= age && d.Age < age + 1 ? 1 : 0;
-              })
+            y: d3.sum(survivalData[group], function (d) {
+              return d.Age >= age && d.Age < age + 1 ? 1 : 0;
+            })
           };
         })
       });
     });
 
-    var stack = d3.layout.stack().values(function(d) { return d.values; });
+    // Build the stacked data
+    var stack = d3.layout.stack().values(function (d) { return d.values; });
     var stackedData = stack(layeredData);
 
+    // Main SVG group
     var svg = isRedraw ? chartSvgs.stackedAgeHistogram.svg :
       d3.select('div#stacked-age-chart')
-      .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
-      .append("g")
-      .attr({
-        transform: "translate(" + margin.left + "," + margin.top + ")",
-        class: 'main-group'
-      });
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append("g")
+        .attr({
+          transform: "translate(" + margin.left + "," + margin.top + ")",
+          class: 'main-group'
+        });
 
+    // Build the scales
     var xScale = isRedraw ? chartSvgs.stackedAgeHistogram.xScale : d3.scale.linear()
       .domain([0, stackedData[0].values.length])
       .range([0, width]);
@@ -373,56 +415,59 @@ var app = function(d3, $) {
     var yScale = isRedraw ? chartSvgs.stackedAgeHistogram.yScale : d3.scale.linear()
       .range([height, 0]);
 
-    yScale.domain([0, d3.max(stackedData[stackedData.length - 1].values, function(topStack) {
+    yScale.domain([0, d3.max(stackedData[stackedData.length - 1].values, function (topStack) {
       return topStack.y0 + topStack.y;
     })]);
 
-     // Bar Groups
+    // Bar Group for each survival group
     var barGroups = svg.selectAll("g.bar-group")
-      .data(stackedData, function(d) {
+      .data(stackedData, function (d) {
         return d.name;
       });
     barGroups.enter()
-        .append("g")
-        .attr("class", function(d) {
-          return d.name.toLowerCase() + " bar-group";
-        });
-
-    // Bar Group Rects
-    var barGroupRects =
-      barGroups
-      .selectAll("rect.survival-per-age")
-      .data(function(d) {
-        return d.values;
-      }, function(d) {
-        return d.x;
+      .append("g")
+      .attr("class", function (d) {
+        return d.name.toLowerCase() + " bar-group";
       });
 
-      barGroupRects
-        .enter()
-        .append("rect")
-        .attr({
-          class: "survival-per-age",
-          width: xScale(1) - xScale(0) - barMargin * 2
+    // Draw rects in each bar groups
+    var barGroupRects =
+      barGroups
+        .selectAll("rect.survival-per-age")
+        .data(function (d) {
+          return d.values;
+        }, function (d) {
+          return d.x;
         });
 
-      barGroupRects.attr("x", function(d) {
+    barGroupRects
+      .enter()
+      .append("rect")
+      .attr({
+        class: "survival-per-age",
+        width: xScale(1) - xScale(0) - barMargin * 2
+      });
+
+    barGroupRects.attr("x", function (d) {
         return xScale(d.x) + barMargin;
       })
-      .attr("y", function(d) {
+      .attr("y", function (d) {
         return yScale(d.y0) - (height - yScale(d.y));
       })
-      .attr("height", function(d) {
+      .attr("height", function (d) {
         return height - yScale(d.y);
       })
-      .classed("dimmed", function(d) {
+      .classed("dimmed", function (d) {
+        // Dim the age group if it is filtered out
         var ageRange = dataFilters.ageRange;
         return !$.isEmptyObject(ageRange) &&
           (d.x < ageRange[0] || d.x >= ageRange[1]);
       });
 
-    // Axes
+    // Draw the Axes
     if (!isRedraw) {
+
+      // x-axis not needed to redraw everytime
       var xAxis = d3.svg.axis()
         .orient("bottom")
         .ticks(16)
@@ -433,55 +478,97 @@ var app = function(d3, $) {
           transform: "translate(" + axisPadding + ", " + height + ")"
         })
         .call(xAxis);
+
+      // Axis labels
+      svg.append('g')
+        .attr({
+          class: "x axis-label",
+          transform: "translate(" + (width / 2 - 60) + ", " + (height + 30) + ")"
+        })
+        .append('text')
+        .text('Age (Class width = 1 year)');
+      svg.append("g")
+        .attr({
+          class: "y axis-label",
+          transform: "translate(-25, " + (height / 2 + 18) + ") rotate(-90)"
+        })
+        .append('text')
+        .text('Count');
     }
 
+    // Draw the y axis. Need to redraw with the data change everytime
     var yAxis = d3.svg.axis()
       .scale(yScale)
       .orient("left");
     var yAxisGroup = isRedraw ? svg.select("g.y.axis") :
       svg.append("g")
-      .attr({
-        class: "y axis",
-        transform: "translate(" + (-axisPadding) + ", 0)"
-      });
+        .attr({
+          class: "y axis",
+          transform: "translate(" + (-axisPadding) + ", 0)"
+        });
     yAxisGroup.call(yAxis);
-    // Text
-    // var barGroupTexts = barGroups
-    //   .selectAll("text.bar.text")
-    //   .data(function(d) {
-    //     return d;
-    //   }, function(d) {
-    //     return d.x;
-    //   });
-    // if (!isRedraw) {
-    //   barGroupTexts
-    //     .enter()
-    //     .append('text')
-    //     .attr({
-    //       "class": "bar text",
-    //       'alignment-baseline': 'middle'
-    //     });
-    // }
-    chartSvgs.stackedAgeHistogram = {
-      svg: svg,
-      xScale: xScale,
-      yScale: yScale,
-      margin: margin,
-      height: height,
-      width: width
-    };
+
+    // Draw the legend
+    if (!isRedraw) {
+      var legendWidth = 87, legendHeight = 45;
+
+      var legendMainGroup = svg.append('g')
+        .attr({
+          width: legendWidth,
+          height: legendHeight
+        })
+        .attr('transform', 'translate(' + (width + margin.right - legendWidth - 1) + ',' + (-margin.top + 1) + ')');
+
+      // Draw the outline border
+      legendMainGroup.append('rect').attr({
+        width: legendWidth,
+        height: legendHeight,
+        class: 'legend-box'
+      });
+
+      // Draw two labels
+      var legendGroups = legendMainGroup.selectAll('g')
+        .data(stackedData.map(function (d) { return d.name; }))
+        .enter()
+        .append('g')
+        .attr('transform', function (d, i) { return 'translate(0, ' + (i * (legendHeight / 2 - 3)) + ')'; });
+
+      // A small rect to show color
+      legendGroups.append('rect')
+        .attr({
+          width: 12,
+          height: 12,
+          transform: 'translate(7, 7)'
+        })
+        .attr('class', function (d) {
+          return d.toLowerCase() + ' legend-color';
+        });
+
+      // Text to show label
+      legendGroups.append('text')
+        .attr({
+          transform: 'translate(24, 5)',
+          class: 'legend-text',
+          'alignment-baseline': 'before-edge'
+        })
+        .text(function (d) { return d; });
+    }
+
+    // Store the object for later use
+    chartSvgs.stackedAgeHistogram.svg = svg;
+    chartSvgs.stackedAgeHistogram.xScale = xScale;
+    chartSvgs.stackedAgeHistogram.yScale = yScale;
+    chartSvgs.stackedAgeHistogram.margin = margin;
+    chartSvgs.stackedAgeHistogram.height = height;
+    chartSvgs.stackedAgeHistogram.width = width;
   }
 
-  /*
-  ███████ ███████ ██   ██
-  ██      ██       ██ ██
-  ███████ █████     ███
-       ██ ██       ██ ██
-  ███████ ███████ ██   ██
-  */
-
-
+  /**
+   * Draw the stacked sex bar chart
+   */
   function drawStackedSexBarChart(data, isRedraw) {
+
+    // Chart properties
     var margin = {
       top: 5,
       left: 50,
@@ -491,6 +578,8 @@ var app = function(d3, $) {
       width = 450,
       barHeight = 20,
       height = 40;
+
+    // Prepare the data for d3 stack function
     var survivalData = {};
     survivalData.Survived = data.filter(function (d) {
       return d.Survived === 1;
@@ -513,9 +602,11 @@ var app = function(d3, $) {
       });
     });
 
+    // Stack the data
     var stack = d3.layout.stack().values(function (d) { return d.values; });
     var stackedData = stack(layeredData);
 
+    // Main SVG Group
     var svg = isRedraw ? chartSvgs.stackedSexBarChart.svg :
       d3.select('div#stacked-sex-chart')
         .append('svg')
@@ -527,6 +618,9 @@ var app = function(d3, $) {
           class: 'main-group'
         });
 
+
+    // Build the scales
+    // x scale will change based on data change
     var xScale = isRedraw ? chartSvgs.stackedSexBarChart.xScale : d3.scale.linear()
       .range([0, width]);
 
@@ -534,11 +628,12 @@ var app = function(d3, $) {
       return topStack.y0 + topStack.y;
     })]);
 
+    // y scale will not change in every redraw
     var yScale = isRedraw ? chartSvgs.stackedSexBarChart.yScale : d3.scale.ordinal()
       .domain(stackedData[0].values.map(function (d) { return d.x; }))
       .rangeRoundBands([0, height], 0.2);
 
-    // Bar Groups
+    // Bar Groups for each survival data
     var barGroups = svg.selectAll("g.bar-group")
       .data(stackedData, function (d) {
         return d.name;
@@ -549,7 +644,7 @@ var app = function(d3, $) {
         return d.name.toLowerCase() + " bar-group";
       });
 
-    // Bar Group Rects
+    // Draw rects for each Bar Group
     var barGroupRects =
       barGroups
         .selectAll("rect.survival-per-sex")
@@ -577,13 +672,15 @@ var app = function(d3, $) {
       .attr("y", function (d) {
         return yScale(d.x);
       })
-      .classed("dimmed", function(d) {
+      .classed("dimmed", function (d) {
+        // Dim the group if it is filtered out
         var selectedSex = dataFilters.sex;
         return !$.isEmptyObject(selectedSex) &&
           (selectedSex.indexOf(d.x.toLowerCase()) < 0);
       })
-      .on('click', function(d) {
-        if (isSexLabelClickable) {
+      .on('click', function (d) {
+        // click event to filter the data
+        if (isSexBarsClickable) {
           var sex = d.x.toLowerCase();
           if ($.isEmptyObject(dataFilters.sex)) {
             dataFilters.sex.push(sex);
@@ -592,12 +689,11 @@ var app = function(d3, $) {
           } else {
             dataFilters.sex = [];
           }
-          redrawWithFilteredData();
+          redrawWithDataFilters();
         }
       });
 
-    // Axes
-
+    // Draw Axes
     var xAxis = d3.svg.axis()
       .orient("bottom")
       .scale(xScale);
@@ -610,6 +706,7 @@ var app = function(d3, $) {
     xAxisGroup.call(xAxis);
 
     if (!isRedraw) {
+      // y axis needs to be drawn only once
       var yAxis = d3.svg.axis()
         .scale(yScale)
         .orient("left");
@@ -619,28 +716,32 @@ var app = function(d3, $) {
           class: "y axis"
         })
         .call(yAxis);
+
+      // x axis label
+      svg.append('g')
+        .attr({
+          class: "x axis-label",
+          transform: "translate(" + (width / 2 - 30) + ", " + (height + 30) + ")"
+        })
+        .append('text')
+        .text('Count');
     }
 
-      chartSvgs.stackedSexBarChart = {
-        svg: svg,
-        xScale: xScale,
-        yScale: yScale,
-        margin: margin,
-        height: height,
-        width: width
-      };
+    // Store the object for later use
+    chartSvgs.stackedSexBarChart.svg = svg;
+    chartSvgs.stackedSexBarChart.xScale = xScale;
+    chartSvgs.stackedSexBarChart.yScale = yScale;
+    chartSvgs.stackedSexBarChart.margin = margin;
+    chartSvgs.stackedSexBarChart.height = height;
+    chartSvgs.stackedSexBarChart.width = width;
   }
 
-  /*
-  ██████   ██████ ██       █████  ███████ ███████
-  ██   ██ ██      ██      ██   ██ ██      ██
-  ██████  ██      ██      ███████ ███████ ███████
-  ██      ██      ██      ██   ██      ██      ██
-  ██       ██████ ███████ ██   ██ ███████ ███████
-  */
-
-
+  /**
+   * Draw the stacked passenger class bar chart
+   */
   function drawStackedPclassBarChart(data, isRedraw) {
+
+    // chart properties
     var margin = {
       top: 5,
       left: 50,
@@ -650,6 +751,8 @@ var app = function(d3, $) {
       width = 450,
       barHeight = 20,
       height = 60;
+
+    // Prepare the data for the d3 stack function
     var survivalData = {};
     survivalData.Survived = data.filter(function (d) {
       return d.Survived === 1;
@@ -672,9 +775,11 @@ var app = function(d3, $) {
       });
     });
 
+    // Stack the data
     var stack = d3.layout.stack().values(function (d) { return d.values; });
     var stackedData = stack(layeredData);
 
+    // Main SVG group
     var svg = isRedraw ? chartSvgs.stackedPclassBarChart.svg :
       d3.select('div#stacked-pclass-chart')
         .append('svg')
@@ -686,6 +791,8 @@ var app = function(d3, $) {
           class: 'main-group'
         });
 
+    // Draw the scales
+    // x scale will change with the data change
     var xScale = isRedraw ? chartSvgs.stackedPclassBarChart.xScale : d3.scale.linear()
       .range([0, width]);
 
@@ -693,11 +800,12 @@ var app = function(d3, $) {
       return topStack.y0 + topStack.y;
     })]);
 
+    // y scale needs to be built only once
     var yScale = isRedraw ? chartSvgs.stackedPclassBarChart.yScale : d3.scale.ordinal()
       .domain(stackedData[0].values.map(function (d) { return d.x; }))
       .rangeRoundBands([0, height], 0.2);
 
-    // Bar Groups
+    // Bar Group for each survival group
     var barGroups = svg.selectAll("g.bar-group")
       .data(stackedData, function (d) {
         return d.name;
@@ -708,7 +816,7 @@ var app = function(d3, $) {
         return d.name.toLowerCase() + " bar-group";
       });
 
-    // Bar Group Rects
+    // Draw rects for each bar group
     var barGroupRects =
       barGroups
         .selectAll("rect.survival-per-pclass")
@@ -736,33 +844,36 @@ var app = function(d3, $) {
       .attr("y", function (d) {
         return yScale(d.x);
       })
-      .classed("dimmed", function(d) {
+      .classed("dimmed", function (d) {
+        // Dim the rect when the clsss is filtered out
         var selectedPclasses = dataFilters.pclass;
         return !$.isEmptyObject(selectedPclasses) &&
-            (selectedPclasses.indexOf(+($.grep(Object.keys(pclassMap), function(k) {
-                return pclassMap[k] === d.x;
-            })[0])) < 0);
+          (selectedPclasses.indexOf(+($.grep(Object.keys(pclassMap), function (k) {
+            return pclassMap[k] === d.x;
+          })[0])) < 0);
       })
-      .on("click", function(d) {
-          if (isPclassLabelClickable) {
-            var pclassId = +($.grep(Object.keys(pclassMap), function(k) {
-              return pclassMap[k] === d.x;
-            })[0]);
-            if ($.isEmptyObject(dataFilters.pclass) ||
-              (dataFilters.pclass.indexOf(pclassId) < 0 && dataFilters.pclass.length < 2)) {
-              dataFilters.pclass.push(pclassId);
-            } else if (dataFilters.pclass.indexOf(pclassId) >= 0 && dataFilters.pclass.length > 1) {
-              dataFilters.pclass.splice(dataFilters.pclass.indexOf(pclassId), 1);
-            } else {
-              dataFilters.pclass = [];
-            }
-            dataFilters.pclass.sort();
-            redrawWithFilteredData();
+      .on("click", function (d) {
+        // click event to filter the data
+        if (isPclassBarsClickable) {
+          var pclassId = +($.grep(Object.keys(pclassMap), function (k) {
+            return pclassMap[k] === d.x;
+          })[0]);
+          if ($.isEmptyObject(dataFilters.pclass) ||
+            (dataFilters.pclass.indexOf(pclassId) < 0 && dataFilters.pclass.length < 2)) {
+            dataFilters.pclass.push(pclassId);
+          } else if (dataFilters.pclass.indexOf(pclassId) >= 0 && dataFilters.pclass.length > 1) {
+            dataFilters.pclass.splice(dataFilters.pclass.indexOf(pclassId), 1);
+          } else {
+            dataFilters.pclass = [];
           }
-      });;
+          dataFilters.pclass.sort();
+          redrawWithDataFilters();
+        }
+      });
 
-    // Axes
+    // Draw the Axes
 
+    // x-axis will change with data change
     var xAxis = d3.svg.axis()
       .orient("bottom")
       .scale(xScale);
@@ -775,6 +886,7 @@ var app = function(d3, $) {
     xAxisGroup.call(xAxis);
 
     if (!isRedraw) {
+      // y axis needs to be drawn once only
       var yAxis = d3.svg.axis()
         .scale(yScale)
         .orient("left");
@@ -785,31 +897,41 @@ var app = function(d3, $) {
         })
         .call(yAxis);
 
-      chartSvgs.stackedPclassBarChart = {
-        svg: svg,
-        xScale: xScale,
-        yScale: yScale,
-        margin: margin,
-        height: height,
-        width: width
-      };
+      // Draw the x-axis label
+      svg.append('g')
+        .attr({
+          class: "x axis-label",
+          transform: "translate(" + (width / 2 - 30) + ", " + (height + 30) + ")"
+        })
+        .append('text')
+        .text('Count');
     }
+
+    // Store the object for later use
+    chartSvgs.stackedPclassBarChart.svg = svg;
+    chartSvgs.stackedPclassBarChart.xScale = xScale;
+    chartSvgs.stackedPclassBarChart.yScale = yScale;
+    chartSvgs.stackedPclassBarChart.margin = margin;
+    chartSvgs.stackedPclassBarChart.height = height;
+    chartSvgs.stackedPclassBarChart.width = width;
   }
 
-
+  /**
+   * Draw the brush for age selection
+   */
   function drawAgeHistogramBrush() {
-
-    d3.select("div#brush-help-text")
-      .classed("hidden", false);
-
+    // D3 brush object
     var brush = d3.svg.brush()
       .x(chartSvgs.stackedAgeHistogram.xScale)
-      .on("brush", function(p) {
+      .on("brush", function (p) {
+        // Change the data selection with the brush move
         var extent = brush.extent();
         dataFilters.ageRange = [Math.ceil(extent[0]), Math.floor(extent[1])];
-        redrawWithFilteredData();
+        redrawWithDataFilters();
       })
-      .on("brushend", function() {
+      .on("brushend", function () {
+        // when brush end, check if the selected area is valid
+        // clear the brush if it is invalid
         var extent = brush.extent();
         var startAge = Math.ceil(brush.extent()[0]);
         var endAge = Math.floor(brush.extent()[1]);
@@ -817,9 +939,11 @@ var app = function(d3, $) {
           brush.clear();
           chartSvgs.stackedAgeHistogram.svg.select("g.x.brush").call(brush);
           dataFilters.ageRange = [];
-          redrawWithFilteredData();
+          redrawWithDataFilters();
         }
       });
+
+    // append the group can call the brush
     chartSvgs.stackedAgeHistogram.svg.append("g")
       .attr("class", "x brush")
       .call(brush)
@@ -828,30 +952,65 @@ var app = function(d3, $) {
         transform: "translate(0, -2)",
         height: chartSvgs.stackedAgeHistogram.height + 2
       });
+    chartSvgs.stackedAgeHistogram.brush = brush;
   }
 
-  function allowRectBarClickable(clickable) {
-    isSexLabelClickable = clickable;
-    isPclassLabelClickable = clickable;
+  /**
+   * Initialize the interaction
+   * (do it when narrative completes)
+   */
+  function initInteraction() {
+    if (interactionInitialized) {
+      return;
+    }
+
+    // make bars clickable
+    isSexBarsClickable = true;
+    isPclassBarsClickable = true;
+
+    // draw the brush
+    drawAgeHistogramBrush();
+
+    // init the reset selection button
+    d3.select('#reset-filter')
+      .classed('hidden', false)
+      .on('click', function () {
+        dataFilters.ageRange = [];
+        dataFilters.sex = [];
+        dataFilters.pclass = [];
+        var brush = chartSvgs.stackedAgeHistogram.brush;
+        if (brush) {
+          brush.clear();
+          chartSvgs.stackedAgeHistogram.svg.select("g.x.brush").call(brush);
+        }
+        redrawWithDataFilters();
+      });
+
+    // display the help text
+    d3.selectAll(".interaction-help-text")
+      .classed("hidden", false);
+
+    // display the dismissable explanation
+    var explainDiv = d3.select('#interaction-explain')
+      .classed('hidden', false);
+    d3.select('#interaction-explain button.close')
+      .on('click', function () {
+        explainDiv.classed('hidden', true);
+        explainDiv = null;
+      });
+
+    // turn on the flag to mark initialized
+    interactionInitialized = true;
   }
 
-  /*
-  ██████  ███████ ██████  ██████   █████  ██     ██
-  ██   ██ ██      ██   ██ ██   ██ ██   ██ ██     ██
-  ██████  █████   ██   ██ ██████  ███████ ██  █  ██
-  ██   ██ ██      ██   ██ ██   ██ ██   ██ ██ ███ ██
-  ██   ██ ███████ ██████  ██   ██ ██   ██  ███ ███
-  */
-
-
-  function redrawWithFilteredData(excludedCharts) {
+  /**
+   * Fitler data and redraw all charts
+   */
+  function redrawWithDataFilters(excludedCharts) {
     var filteredData = filterData(fullData);
     var filteredSurvivalData = getSurvivalCount(filteredData);
-    var sexData = getSexCount(filteredData);
-    var pclassData = getPclassCount(filteredData);
 
     function shouldUpdate(chart) {
-
       if ($.isArray(excludedCharts)) {
         return excludedCharts.indexOf(chart) < 0;
       } else {
@@ -867,15 +1026,6 @@ var app = function(d3, $) {
     if (shouldUpdate(chartSvgs.survivalStack)) {
       drawSurvivalStack(filteredSurvivalData, true);
     }
-    // if (shouldUpdate(chartSvgs.ageHistogram)) {
-    //   drawAgeHistogram(filterData(fullData, ['Age']), true);
-    // }
-    // if (shouldUpdate(chartSvgs.sexChart)) {
-    //   drawSexStack(sexData, true);
-    // }
-    // if (shouldUpdate(chartSvgs.pclassChart)) {
-    //   drawPclassChart(pclassData, true);
-    // }
     if (shouldUpdate(chartSvgs.stackedAgeHistogram)) {
       drawStackedAgeHistogram(filterData(fullData, ['Age']), true);
     }
@@ -887,11 +1037,15 @@ var app = function(d3, $) {
     }
   }
 
+  /**
+   *  Filter the data based on dataFilters
+   *  excludedFields allows specifying which filters to exclude
+   */
   function filterData(data, excludedFields) {
     if (!excludedFields) {
       excludedFields = [];
     }
-    return $.grep(data, function(d) {
+    return $.grep(data, function (d) {
       if (excludedFields.indexOf('Age') && !$.isEmptyObject(dataFilters.ageRange)) {
         if (d.Age === null) {
           return false;
@@ -911,17 +1065,24 @@ var app = function(d3, $) {
     });
   }
 
+  /**
+   * Fill in the number of data, mainly for narratives text
+   */
   function initDrawDataLabels() {
-    var numOfSamplesWithAge = $.grep(fullData, function(d) {
+    var numOfSamplesWithAge = $.grep(fullData, function (d) {
       return d.Age !== null;
     }).length;
     d3.selectAll(".rows-of-dataset").html(fullData.length);
     d3.selectAll(".rows-of-age-data").html(numOfSamplesWithAge);
   }
 
+  /**
+   * Calculate and set the number of data to the current data selection info panel
+   */
   function drawDataLabels(data) {
     d3.selectAll(".current-rows-of-dataset").html(data.length);
 
+    // Calculate the  age range filter
     var ageRange = dataFilters.ageRange;
     if ($.isEmptyObject(ageRange) || !$.isArray(ageRange)) {
       d3.selectAll(".age-not-restricted-label").classed("hidden", false);
@@ -933,6 +1094,7 @@ var app = function(d3, $) {
       d3.selectAll(".upper-age").html(ageRange[1]);
     }
 
+    // Calculate the sex filter
     var sex = dataFilters.sex;
     if ($.isEmptyObject(sex) || !$.isArray(sex)) {
       d3.selectAll(".sex-not-restricted-label").classed("hidden", false);
@@ -944,11 +1106,12 @@ var app = function(d3, $) {
       d3.selectAll(".selected-female-label").classed("hidden", sex.indexOf("female") < 0);
     }
 
+    // Calculate the passenger class filter
     var pclass = dataFilters.pclass;
     if ($.isEmptyObject(pclass) || !$.isArray(pclass)) {
       d3.selectAll(".pclass-not-restricted-label").classed("hidden", false);
       d3.selectAll("#selected-pclass-label").classed("hidden", true);
-    } else if ($.isArray(pclass)){
+    } else if ($.isArray(pclass)) {
       d3.selectAll(".pclass-not-restricted-label").classed("hidden", true);
       d3.select("#selected-pclass-label").classed("hidden", false);
       d3.select("#selected-pclass-label")
@@ -956,121 +1119,126 @@ var app = function(d3, $) {
         .remove();
       d3.select("#selected-pclass-label")
         .selectAll("span")
-        .data(pclass.sort(), function(d) {
-          console.log(d);
+        .data(pclass.sort(), function (d) {
           return d;
         })
         .enter()
         .append("span")
-        .html(function(d) {
+        .html(function (d) {
           return pclassMap[d] + '<span class="comma">, </span>';
         });
     }
   }
 
-  /*
-  ███    ██  █████  ██████  ██████   █████  ████████ ██ ██    ██ ███████
-  ████   ██ ██   ██ ██   ██ ██   ██ ██   ██    ██    ██ ██    ██ ██
-  ██ ██  ██ ███████ ██████  ██████  ███████    ██    ██ ██    ██ █████
-  ██  ██ ██ ██   ██ ██   ██ ██   ██ ██   ██    ██    ██  ██  ██  ██
-  ██   ████ ██   ██ ██   ██ ██   ██ ██   ██    ██    ██   ████   ███████
-  */
-
-
+  /**
+   * Perform the narratives
+   */
   function performNarrativeAnimation(callback) {
+    // Each narrative objects corresponds to a DOM to display
+    // the timeout, what to do, what to waitFor
     var ageNarrative = [{
-      id: "narrative-0",
-      timeout: 3000
-    }, {
-      id: "narrative-1",
-      timeout: 3000
-    }, {
-      id: "narrative-2",
-      timeout: 3000
-    }, {
-      id: "narrative-3",
-      timeout: 3000
-    }, {
-      id: "narrative-4",
-      timeout: 6000,
-      toAge: 10,
-      toAgeSpeed: 400
-    }, {
-      id: "narrative-5",
-      timeout: 3000
-    }, {
-      id: "narrative-6",
-      timeout: 10000,
-      toAge: maxAge + 1
-    }, {
-      id: "narrative-7",
-      timeout: 4000
-    }, {
-      id: "narrative-8",
-      timeout: 6000
-    }, {
-      id: "narrative-9",
-      timeout: 3000,
-      waitFor: function() {
-        return waitFor.ageAnimateEnd;
-      }
-    }, {
-      id: "narrative-10",
-      timeout: 5000,
-      before: function() {
-        dataFilters.ageRange = [];
-        redrawWithFilteredData();
-      }
-    }, {
-      id: "narrative-11",
-      timeout: 8000,
-      sex: ["male"]
-    }, {
-      id: "narrative-12",
-      timeout: 5000,
-      sex: ["female"]
-    }, {
-      id: "narrative-13",
-      timeout: 5000,
-      sex: ["female"]
+        id: "narrative-0",
+        timeout: 3000
+      }, {
+        id: "narrative-1",
+        timeout: 5000
+      }, {
+        id: "narrative-2",
+        timeout: 8000
+      }, {
+        id: "narrative-3",
+        timeout: 5000
+      }, {
+        id: "narrative-4",
+        timeout: 3000,
+        toAge: 10,
+        toAgeSpeed: 300
+      }, {
+        id: "narrative-5",
+        timeout: 4000,
+        waitFor: function () {
+          return waitFor.ageAnimateEnd;
+        }
+      }, {
+        id: "narrative-6",
+        timeout: 3000,
+        toAge: maxAge + 1
+      }, {
+        id: "narrative-7",
+        timeout: 6000
+      }, {
+        id: "narrative-8",
+        timeout: 3000
+      }, {
+        id: "narrative-9",
+        timeout: 3000,
+        waitFor: function () {
+          return waitFor.ageAnimateEnd;
+        }
+      }, {
+        id: "narrative-10",
+        timeout: 4000,
+        before: function () {
+          dataFilters.ageRange = [];
+          redrawWithDataFilters();
+        }
+      }, {
+        id: "narrative-11",
+        timeout: 6000,
+        sex: ["male"]
+      }, {
+        id: "narrative-12",
+        timeout: 3000,
+        sex: ["female"]
+      }, {
+        id: "narrative-13",
+        timeout: 4000,
+        sex: ["female"]
 
-    }, {
-      id: "narrative-14",
-      timeout: 5000,
-      before: function() {
-        dataFilters.sex = [];
-        redrawWithFilteredData();
-      }
-    }, {
-      id: "narrative-15",
-      timeout: 8000,
-      pclass: [3]
-    }, {
-      id: "narrative-16",
-      timeout: 8000,
-      pclass: [2]
-    }, {
-      id: "narrative-17",
-      timeout: 5000,
-      pclass: [1]
-    }, {
-      id: "narrative-18",
-      timeout: 5000
-    }, {
-      id: "narrative-19",
-      timeout: 5000,
-      before: function() {
-        dataFilters.pclass = [];
-        redrawWithFilteredData();
-      }
-    }, {
-      id: "narrative-20",
-      timeout: 5000
-    }];
-    // ageNarrative = [];
+      }, {
+        id: "narrative-14",
+        timeout: 4000,
+        before: function () {
+          dataFilters.sex = [];
+          redrawWithDataFilters();
+        }
+      }, {
+        id: "narrative-15",
+        timeout: 6000,
+        pclass: [3]
+      }, {
+        id: "narrative-16",
+        timeout: 6000,
+        pclass: [2]
+      }, {
+        id: "narrative-17",
+        timeout: 3000,
+        pclass: [1]
+      }, {
+        id: "narrative-18",
+        timeout: 4000,
+        pclass: [1]
+      }, {
+        id: "narrative-19",
+        timeout: 4000,
+        before: function () {
+          dataFilters.pclass = [];
+          redrawWithDataFilters();
+        }
+      }, {
+        id: "narrative-20",
+        timeout: 5000,
+        before: function () {
+          redrawWithDataFilters();
+          initInteraction();
+        }
+      }];
+    // For debug, use ageNarrative = []; to skip
     var currCount = 0;
     var waitFor = {};
 
+    // Do the narrative animation
+    // It will return after all steps are done.
     function doAnimate() {
       var currNarrative = ageNarrative[currCount++];
       if (!currNarrative) {
@@ -1080,7 +1248,7 @@ var app = function(d3, $) {
       if (typeof currNarrative.waitFor === "function") {
         if (!currNarrative.waitFor()) {
           currCount--;
-          setTimeout(doAnimate, 500);
+          setTimeout(doAnimate, 100);
           return;
         }
       }
@@ -1100,35 +1268,37 @@ var app = function(d3, $) {
         waitFor.ageAnimateEnd = false;
         if ($.isEmptyObject(dataFilters.ageRange)) {
           dataFilters.ageRange = [0, 1];
-          redrawWithFilteredData();
+          redrawWithDataFilters();
         }
         var currAgeUpperLimit = dataFilters.ageRange[1];
-        var increaseAgeInterval = setInterval(function() {
+        var increaseAgeInterval = setInterval(function () {
           dataFilters.ageRange[1] += 1;
-          redrawWithFilteredData();
+          redrawWithDataFilters();
 
           if (dataFilters.ageRange[1] >= currNarrative.toAge) {
             clearInterval(increaseAgeInterval);
             waitFor.ageAnimateEnd = true;
           }
-        }, currNarrative.toAgeSpeed ? currNarrative.toAgeSpeed : 200);
+        }, currNarrative.toAgeSpeed ? currNarrative.toAgeSpeed : 100);
       }
       if ($.isArray(currNarrative.sex)) {
         dataFilters.sex = currNarrative.sex.slice();
-        redrawWithFilteredData();
+        redrawWithDataFilters();
       }
       if ($.isArray(currNarrative.pclass)) {
         dataFilters.pclass = currNarrative.pclass.slice();
-        redrawWithFilteredData();
+        redrawWithDataFilters();
       }
       setTimeout(doAnimate, currNarrative.timeout);
     }
 
+    // Starting point
     function startNarrative() {
       d3.select("#narrative-panel").classed("hidden", false);
       doAnimate();
     }
 
+    // Ending point, call the passed-in callback
     function endNarrative() {
       d3.select("#narrative-panel").classed("hidden", true);
       if (typeof callback === "function") {
@@ -1136,46 +1306,47 @@ var app = function(d3, $) {
       }
     }
 
+    // Delay 100ms before starting the narratives
     setTimeout(startNarrative, 100);
   }
 
-  /*
-  ██████  ██████   █████  ██     ██
-  ██   ██ ██   ██ ██   ██ ██     ██
-  ██   ██ ██████  ███████ ██  █  ██
-  ██   ██ ██   ██ ██   ██ ██ ███ ██
-  ██████  ██   ██ ██   ██  ███ ███
-  */
-
+  /**
+   * The main drawing function
+   */
   function draw(data) {
     fullData = data;
-    maxAge = d3.max(fullData, function(d) {
+    maxAge = d3.max(fullData, function (d) {
       return d.Age;
     });
-    minAge = d3.min(fullData, function(d) {
+    minAge = d3.min(fullData, function (d) {
       return d.Age;
     });
+
+    // Draw labels
     initDrawDataLabels();
     drawDataLabels(data);
+
+    // Draw the main survival section
     var survivalData = getSurvivalCount(data);
-    var sexData = getSexCount(data);
-    var pclassData = getPclassCount(data);
     drawSurvivalChart(survivalData);
     drawSurvivalStack(survivalData);
-    // drawAgeHistogram(data);
+
+    // Draw the 3 attribute charts
     drawStackedAgeHistogram(data);
     drawStackedSexBarChart(data);
     drawStackedPclassBarChart(data);
-    // drawSexStack(sexData);
-    // drawPclassChart(pclassData);
-    performNarrativeAnimation(function() {
-      drawAgeHistogramBrush();
-      allowRectBarClickable(true);
+
+    // Star the narratives
+    performNarrativeAnimation(function () {
+      initInteraction();
     });
   }
 
+  /*
+   * The main entry init point
+   */
   function init() {
-    d3.csv('data/titanic.csv', function(row) {
+    d3.csv('data/titanic.csv', function (row) {
       row.PassengerId = +row.PassengerId;
       row.Survived = +row.Survived;
       row.SurvivedBool = row.Survived === 1;
@@ -1185,361 +1356,14 @@ var app = function(d3, $) {
       row.Parch = +row.Parch;
       row.Fare = +row.Fare;
       return row;
-    }, function(err, data) {
+    }, function (err, data) {
       draw(data);
     });
-  }
-
-
-
-  function drawAgeHistogram(data, isRedraw) {
-    var rowsWithAge = [],
-      rowsWithoutAge = [];
-    data.forEach(function(d) {
-      if (d.Age !== null) {
-        rowsWithAge.push(d);
-      } else {
-        rowsWithoutAge.push(d);
-      }
-    });
-    var margin = {
-        top: 15,
-        left: 30,
-        bottom: 20,
-        right: 2
-      },
-      axisPadding = 0,
-      width = 1000,
-      barWidth = 20,
-      height = 300;
-    // Scales
-    // xScale is kept unchanged on purpose
-    var xScale = isRedraw ? chartSvgs.ageHistogram.xScale : d3.scale.linear()
-      .domain([0, maxAge + 1])
-      .range([0, width]);
-
-    var histogramData = d3.layout.histogram()
-      .bins(xScale.ticks(maxAge))
-      (rowsWithAge.map(function(d) {
-        return d.Age;
-      }));
-
-    var yScale = isRedraw ? chartSvgs.ageHistogram.yScale : d3.scale.linear()
-      .range([height, 0]);
-    yScale.domain([0, d3.max(histogramData, function(d) {
-      return d.y;
-    })]);
-
-    var svg = isRedraw ? chartSvgs.ageHistogram.svg : d3.select("div#age-chart")
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    // debugger;
-    var barGroups = svg.selectAll("g.bar-group")
-      .data(histogramData, function(d) {
-        return d.x;
-      });
-    if (!isRedraw) {
-      barGroups.enter()
-        .append("g")
-        .attr("class", "age bar-group");
-    }
-    barGroups
-      .attr("transform", function(d) {
-        return "translate(" + xScale(d.x) + ", " + yScale(d.y) + ")";
-      });
-    var barGroupRects = isRedraw ? barGroups.select("rect.age-data") :
-      barGroups
-      .append("rect")
-      .attr("class", "age-data");
-    barGroupRects
-      .attr("width", xScale(histogramData[0].dx) - 2)
-      .attr("height", function(d) {
-        return height - yScale(d.y);
-      });
-    // Axes
-    if (!isRedraw) {
-      var xAxis = d3.svg.axis()
-        .orient("bottom")
-        .ticks(16)
-        .scale(xScale);
-      svg.append("g")
-        .attr({
-          class: "x axis",
-          transform: "translate(" + axisPadding + ", " + height + ")"
-        })
-        .call(xAxis);
-    }
-    var yAxis = d3.svg.axis()
-      .scale(yScale)
-      .orient("left");
-    var yAxisGroup = isRedraw ? svg.select("g.y.axis") :
-      svg.append("g")
-      .attr({
-        class: "y axis",
-        transform: "translate(" + (-axisPadding) + ", 0)"
-      });
-    yAxisGroup.call(yAxis);
-    chartSvgs.ageHistogram = {
-      svg: svg,
-      xScale: xScale,
-      yScale: yScale,
-      margin: margin,
-      height: height,
-      width: width
-    };
-  }
-
-  function drawSexStack(sexData, isRedraw) {
-    var totalCount = d3.sum(sexData, function(d) {
-      return d.count;
-    });
-    if (totalCount <= 0) {
-      // It should not draw this graph if both counts are zero's.
-      return;
-    }
-    var margin = {
-        top: 5,
-        left: 10,
-        bottom: 10,
-        right: 30
-      },
-      width = 500,
-      barHeight = 20,
-      height = 30;
-    var layer = d3.layout.stack()(sexData.map(function(d) {
-      return [{
-        x: d.category,
-        y: d.count
-      }];
-    }));
-    var svg = isRedraw ? chartSvgs.sexChart.svg : d3.select("div#sex-chart")
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr({
-        transform: "translate(" + margin.left + "," +
-          margin.top + ")",
-        class: 'main-group'
-      });
-    // Scale
-    var xScale = isRedraw ? chartSvgs.sexChart.xScale : d3.scale.linear()
-      .range([0, width]);
-    xScale.domain([0, d3.max(layer, function(layer) {
-      return layer[0].y0 + layer[0].y;
-    })]);
-    // Bar Groups
-    var barGroups = svg.selectAll("g.bar-group")
-      .data(layer, function(d, i) {
-        return i;
-      });
-    if (!isRedraw) {
-      barGroups.enter()
-        .append("g")
-        .attr("class", function(d) {
-          return d[0].x.toLowerCase() + " bar-group";
-        });
-    }
-    // Bar Group Rects
-    var barGroupRects = barGroups
-      .selectAll("rect")
-      .data(function(d) {
-        return d;
-      }, function(d) {
-        return d.x;
-      });
-    if (!isRedraw) {
-      barGroupRects.enter()
-        .append("rect")
-        .attr("y", 0)
-        .attr("height", barHeight);
-    }
-    barGroupRects.attr("x", function(d, i) {
-        return xScale(d.y0);
-      })
-      .attr("width", function(d) {
-        return xScale(d.y);
-      });
-    // Bar Group Texts
-    var barGroupTexts = barGroups
-      .selectAll("text.bar.text")
-      .data(function(d) {
-        return d;
-      }, function(d) {
-        return d.x;
-      });
-    if (!isRedraw) {
-      barGroupTexts.enter()
-        .append('text')
-        .attr({
-          "class": "bar text",
-          'alignment-baseline': 'text-before-edge',
-          'text-anchor': 'middle'
-        }).on("click", function(d) {
-          if (isSexLabelClickable) {
-            var sex = d.x.toLowerCase();
-            if ($.isEmptyObject(dataFilters.sex)) {
-              dataFilters.sex.push(sex);
-            } else if (dataFilters.sex.indexOf(sex) >= 0 && dataFilters.sex.length > 1) {
-              dataFilters.sex.splice(dataFilters.sex.indexOf(sex), 1);
-            } else {
-              dataFilters.sex = [];
-            }
-            redrawWithFilteredData();
-          }
-        });
-    }
-    barGroupTexts.text(function(d) {
-        var count = sexData.find(function(sd) {
-          return sd.category === d.x;
-        }).count;
-        var percentage = Math.round(count / totalCount * 1000) / 10;
-        return d.x + ": " + count + " (" + percentage + "%)";
-      })
-      .attr("transform", function(d) {
-        return "translate(" + (xScale(d.y0) + xScale(d.y) / 2) + ", " + (barHeight + 2) + ")";
-      });
-
-    chartSvgs.sexChart = {
-      svg: svg,
-      xScale: xScale,
-      yScale: null,
-      margin: margin,
-      height: height,
-      width: width
-    };
-  }
-
-  function drawPclassChart(pclassData, isRedraw) {
-    var margin = {
-        top: 25,
-        left: 20,
-        bottom: 20,
-        right: 5
-      },
-      width = 300,
-      height = 100,
-      totalCount = d3.sum(pclassData, function(d) {
-        return d.count;
-      });
-    var svg = isRedraw ? chartSvgs.pclassChart.svg : d3.select("div#pclass-chart")
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr({
-        transform: "translate(" + margin.left + "," +
-          margin.top + ")",
-        class: 'main-group'
-      });
-    // Scales
-    var xScale = isRedraw ? chartSvgs.pclassChart.xScale : d3.scale.ordinal()
-      .domain(pclassData.map(function(d) {
-        return d.category;
-      }))
-      .rangeRoundBands([0, width], 0.2);
-    var yScale = isRedraw ? chartSvgs.pclassChart.yScale : d3.scale
-      .linear()
-      .range([height, 0]);
-    yScale.domain([0, d3.max(pclassData, function(d) {
-      return d.count;
-    })]);
-    var barGroups = svg.selectAll("g.bar-group")
-      .data(pclassData, function(d) {
-        return d.category;
-      });
-    if (!isRedraw) {
-      barGroups.enter()
-        .append("g")
-        .attr("class", function(d) {
-          return d.category.toLowerCase() + " bar-group";
-        });
-    }
-    barGroups.attr("transform", function(d) {
-      return "translate(" + xScale(d.category) + "," + yScale(d.count) + ")";
-    });
-    var barGroupRects = isRedraw ? barGroups.select("rect.pclass-data") : barGroups
-      .append("rect")
-      .attr("class", "pclass-data")
-      .attr("width", function(d) {
-        return xScale.rangeBand();
-      });
-    barGroupRects
-      .attr("height", function(d) {
-        return height - yScale(d.count);
-      });
-    var barGroupTexts = isRedraw ? barGroups.select("text.bar.text") : barGroups
-      .append('text')
-      .attr({
-        "class": "bar text",
-        "alignment-baseline": "after-edge",
-        'text-anchor': 'middle'
-      })
-      .attr("transform", function(d) {
-        return "translate( " + xScale.rangeBand() / 2 + ", -2)";
-      })
-      .on("click", function(d) {
-          if (isSexLabelClickable) {
-            var pclassId = +Object.keys(pclassMap).filter(function(k) {
-              return pclassMap[k] === d.category;
-            })[0];
-            if ($.isEmptyObject(dataFilters.pclass) ||
-              (dataFilters.pclass.indexOf(pclassId) < 0 && dataFilters.pclass.length < 2)) {
-              dataFilters.pclass.push(pclassId);
-            } else if (dataFilters.pclass.indexOf(pclassId) >= 0 && dataFilters.pclass.length > 1) {
-              dataFilters.pclass.splice(dataFilters.pclass.indexOf(pclassId), 1);
-            } else {
-              dataFilters.pclass = [];
-            }
-            dataFilters.pclass.sort();
-            redrawWithFilteredData();
-          }
-      });
-    barGroupTexts.text(function(d) {
-      return d.count + (totalCount === 0 ? "" : " (" + Math.round(d.count / totalCount * 1000) / 10 + "%)");
-    });
-    // Axes
-    if (!isRedraw) {
-      var xAxis = d3.svg.axis()
-        .orient('bottom')
-        .scale(xScale);
-
-      svg.append('g')
-        .attr({
-          transform: 'translate(0,' + height + ')'
-        })
-        .attr("class", "x axis")
-        .call(xAxis);
-    }
-
-    chartSvgs.pclassChart = {
-      svg: svg,
-      xScale: xScale,
-      yScale: yScale,
-      margin: margin,
-      height: height,
-      width: width
-    };
-  }
-
-  function dimUnselectedAgeRange(ageRange) {
-    if ($.isEmptyObject(ageRange)) {
-      chartSvgs.ageHistogram.svg.selectAll("rect.age-data")
-        .classed("dimmed", false);
-    } else {
-      chartSvgs.ageHistogram.svg.selectAll("rect.age-data")
-        .classed("dimmed", function(d) {
-          return d.x < ageRange[0] || d.x >= ageRange[1];
-        });
-    }
   }
 
   return {
     init: init
   };
-}(d3, jQuery);
+} (d3, jQuery);
 
 jQuery(app.init);
