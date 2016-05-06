@@ -40,53 +40,52 @@
                 </div>
             </div>
         </div>
-        <div id="current-data-selection" class="panel panel-default">
-            <div class="panel-heading">
-                <div>Current data selection</div>
-            </div>
-            <div class="panel-body">
-                <div class="row">
-                    <div class="col-md-2 col-sm-6">No. of samples: <span class="current-rows-of-dataset"></span></div>
-                    <div class="col-md-4 col-sm-6">Age Range: <span class="hidden age-range"><span class="lower-age"></span> (inclusive) to <span class="upper-age"></span> (exclusive)</span> <span class="age-not-restricted-label">Not Restricted</span></div>
-                    <div class="col-md-3 col-sm-6">Sex: <span class="hidden selected-sex-label"><span class="selected-male-label">Male</span> <span class="selected-female-label">Female</span></span> <span class="sex-not-restricted-label">Not Restricted</span></div>
-                    <div class="col-md-3 col-sm-6">Passenger Class: <span id="selected-pclass-label" class="hidden"><span class="selected-lower-label">Lower</span> <span class="selected-middle-label">Middle</span> <span class="selected-upper-label">Upper</span></span> <span class="pclass-not-restricted-label">Not Restricted</span></div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div id="survival-focus" class="col-md-12">
-                <div class="header-text">
-                    <h4>A bar chart of survived and perished passengers</h4></div>
+        <div class="well well-sm">
+            <div id="survival-focus">
+                <div id="survival-focus-title">
+                    <h4>Survival statistics of the selected group of passengers</h4></div>
                 <div id="survival" class="inline-block-align-top"></div>
                 <div id="survival-ratio" class="inline-block-align-top"></div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div>
-                    <h4>A histogram of the distribution of ages of the passengers</h4>
-                    <div id="brush-help-text" class="hidden">
-                        <div>Select an area on the histogram to filter the data and see the effect.</div>
-                        <div>(Note: Once the data is filtered by an age range, the data will not include all the passenger whose ages are unknown in the source data.)</div>
-                    </div>
+        <div id="current-data-selection" class="panel panel-info">
+            <div class="panel-heading"> <strong>Current data selection</strong></div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-2 col-sm-6">No. of samples:&nbsp;<span class="current-rows-of-dataset selection-stats"></span></div>
+                    <div class="col-md-4 col-sm-6">Age Range:&nbsp;<span class="hidden age-range"><span class="lower-age selection-stats"></span> (inclusive) to <span class="upper-age selection-stats"></span> (exclusive)</span> <span class="age-not-restricted-label selection-stats">Not Restricted</span></div>
+                    <div
+                        class="col-md-3 col-sm-6">Sex:&nbsp;<span class="selection-stats"><span class="hidden selected-sex-label"><span class="selected-male-label">Male</span> <span class="selected-female-label">Female</span></span> <span class="sex-not-restricted-label">Not Restricted</span></span>
                 </div>
-                <div id="age-chart"></div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="inline-block-align-top">
-                    <div>
-                        <h4>The ratio of the sex of passengers</h4></div>
-                    <div id="sex-chart"></div>
-                </div>
-                <div class="inline-block-align-top">
-                    <div>
-                        <h4>A bar chart of the passenger class of passengers</h4></div>
-                    <div id="pclass-chart"></div>
+                <div class="col-md-3 col-sm-6">Passenger Class:<span class="selection-stats"><span id="selected-pclass-label" class="hidden"><span class="selected-lower-label">Lower</span> <span class="selected-middle-label">Middle</span> <span class="selected-upper-label">Upper</span></span>
+                    <span class="pclass-not-restricted-label">Not Restricted</span></span>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div><strong>A histogram of the distribution of ages of the passengers</strong>
+                <div id="brush-help-text" class="hidden">
+                    <div>Select an area on the histogram to filter the data and see the effect.</div>
+                    <div>(Note: Once the data is filtered by an age range, the data will not include all the passenger whose ages are unknown in the source data.)</div>
+                </div>
+            </div>
+            <div id="stacked-age-chart"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="inline-block-align-top">
+                <div><strong>The ratio of the sex of passengers</strong></div>
+                <div id="stacked-sex-chart"></div>
+            </div>
+            <div class="inline-block-align-top">
+                <div><strong>A bar chart of the passenger class of passengers</strong></div>
+                <div id="stacked-pclass-chart"></div>
+            </div>
+        </div>
+    </div>
     </div>
     <script src="js/babel-polyfill/polyfill.min.js"></script>
     <script src="js/jquery/jquery.js"></script>
