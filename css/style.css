@@ -8,6 +8,10 @@ body {
   display:none;
 }
 
+.well {
+  margin-bottom: 10px;
+}
+
 .panel-heading, .alert {
   padding-top: 6px;
   padding-bottom: 7px;
@@ -29,7 +33,7 @@ body {
   top: -2px;
 }
 
-#current-data-selection {
+.panel {
   margin-bottom: 10px;
 }
 

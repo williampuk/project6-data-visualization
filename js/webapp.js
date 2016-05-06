@@ -89,7 +89,7 @@ var app = function(d3, $) {
     var margin = {
         top: 0,
         left: 50,
-        bottom: 18,
+        bottom: 32,
         right: 35
       },
       width = 800,
@@ -99,7 +99,7 @@ var app = function(d3, $) {
       d3.select("div#survival")
       .append("svg")
       .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom * 2)
+      .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr({
         transform: "translate(" + margin.left + "," +
@@ -208,7 +208,7 @@ var app = function(d3, $) {
       axisPadding = 0,
       width = 80,
       barWidth = 20,
-      height = 60;
+      height = 70;
     var totalCount = d3.sum(survivalData, function(d) {
       return d.count;
     });
@@ -1141,7 +1141,7 @@ var app = function(d3, $) {
         initInteraction();
       }
     }];
-    ageNarrative = [];
+    // ageNarrative = [];
     var currCount = 0;
     var waitFor = {};
 
