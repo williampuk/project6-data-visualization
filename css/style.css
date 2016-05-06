@@ -13,41 +13,31 @@ body {
   padding-bottom: 5px;
 }
 
+.selection-stats {
+  font-weight: bold;
+  font-size: 110%;
+}
+
+/* Text Containers */
+#survival-focus-title {
+  padding-left: 10px;
+}
+
 /* Clickable label */
 text.bar.text {
   cursor: pointer;
 }
 
 /* Chart Colors */
+rect.dimmed {
+  opacity: .2;
+}
+
 .survived.bar-group {
   fill: #33a02c;
 }
 
 .perished.bar-group {
-  fill: #e31a1c;
-}
-
-#stacked-age-chart .Survived.bar-group {
-  fill: #33a02c;
-}
-
-#stacked-age-chart .Perished.bar-group {
-  fill: #e31a1c;
-}
-
-#stacked-sex-chart  .Survived.bar-group {
-  fill: #33a02c;
-}
-
-#stacked-sex-chart  .Perished.bar-group {
-  fill: #e31a1c;
-}
-
-#stacked-pclass-chart  .Survived.bar-group {
-  fill: #33a02c;
-}
-
-#stacked-pclass-chart  .Perished.bar-group {
   fill: #e31a1c;
 }
 
@@ -59,7 +49,7 @@ text.bar.text {
   opacity: .2;
 }
 
-#age-chart .brush rect {
+.brush rect {
   fill: #000;
   opacity: .125;
 }
@@ -104,7 +94,6 @@ div.inline-block-align-top {
 }
 
 #survival .x.axis line {
-  shape-rendering: crispEdges;
   stroke: #000;
 }
 
@@ -114,7 +103,6 @@ div.inline-block-align-top {
 }
 
 #stacked-age-chart .x.axis line, #stacked-age-chart .y.axis line {
-  shape-rendering: crispEdges;
   stroke: #000;
 }
 
@@ -124,7 +112,6 @@ div.inline-block-align-top {
 }
 
 #age-chart .x.axis line, #age-chart .y.axis line {
-  shape-rendering: crispEdges;
   stroke: #000;
 }
 
@@ -134,7 +121,6 @@ div.inline-block-align-top {
 }
 
 #stacked-sex-chart  .x.axis line, #stacked-sex-chart  .y.axis line {
-  shape-rendering: crispEdges;
   stroke: #000;
 }
 
@@ -144,7 +130,6 @@ div.inline-block-align-top {
 }
 
 #stacked-pclass-chart  .x.axis line, #stacked-pclass-chart  .y.axis line {
-  shape-rendering: crispEdges;
   stroke: #000;
 }
 
@@ -154,7 +139,6 @@ div.inline-block-align-top {
 }
 
 #pclass-chart .x.axis line {
-  shape-rendering: crispEdges;
   stroke: #000;
 }
 
