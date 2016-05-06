@@ -18,14 +18,13 @@ body {
   font-size: 110%;
 }
 
+rect.clickable {
+  cursor: pointer;
+}
+
 /* Text Containers */
 #survival-focus-title {
   padding-left: 10px;
-}
-
-/* Clickable label */
-text.bar.text {
-  cursor: pointer;
 }
 
 /* Chart Colors */
