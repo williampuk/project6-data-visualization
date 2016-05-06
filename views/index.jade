@@ -4,12 +4,12 @@ block content
   h2 Data Viusalization of Titanic Dataset
   p This data visualization shows how the survival rate relates to the age, sex and passenger class of a passenger.
   div.container-fluid
-    div#narrative-panel.panel.panel-info.hidden
+    div#narrative-panel.panel.panel-primary.hidden
       div.panel-heading
         div.row
           div#narrative.col-md-12
             div#narrative-0
-              strong Hi! Welcome to this data visualization of Titanic Data
+              strong Hi ! Welcome to this data visualization of Titanic Data
             div#narrative-1
               strong We first look at the relationship between the age range of passengers and the survival rate.
             div#narrative-2
@@ -17,7 +17,7 @@ block content
             div#narrative-3
               strong We will be able to see how survival rate changes with varying age range selection out of these #[span.rows-of-age-data] records.
             div#narrative-4
-              strong The selection first starts with 0, and gradually increases up to the maximum recorded age.
+              strong The selection first starts with 0, and gradually increases up to 10 (exclusive).
             div#narrative-5
               strong We can see the survival age of passengers below 10 is pretty high. It is always above 60%.
             div#narrative-6
@@ -53,13 +53,14 @@ block content
 
     div.well.well-sm
       div#survival-focus
-        div#survival-focus-title
-          h4 Survival statistics of the selected group of passengers
+        div#survival-focus-title Survival statistics of the selected group of passengers
         div#survival.inline-block-align-top
         div#survival-ratio.inline-block-align-top
     div#current-data-selection.panel.panel-info
       div.panel-heading 
         strong Current data selection
+        button(type="button")#reset-filter.btn.btn-sm.pull-right.hidden
+          strong Reset data selection
       div.panel-body
         div.row
           div.col-md-2.col-sm-6 No. of samples:&nbsp;#[span.current-rows-of-dataset.selection-stats]
@@ -72,7 +73,7 @@ block content
       div.col-md-12
         div
           strong A histogram of the distribution of ages of the passengers
-          div#brush-help-text.hidden
+          div.interaction-help-text.hidden
             div Select an area on the histogram to filter the data and see the effect.
             div (Note: Once the data is filtered by an age range, the data will not include all the passenger whose ages are unknown in the source data.)
         div#stacked-age-chart
